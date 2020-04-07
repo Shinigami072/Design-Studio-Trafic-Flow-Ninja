@@ -1,0 +1,82 @@
+TomTom:
+
+	{
+	"flowSegmentData": {
+		"frc": "FRC3",
+		"currentSpeed": 74,
+		"freeFlowSpeed": 74,
+		"currentTravelTime": 42,
+		"freeFlowTravelTime": 42,
+		"confidence": 0.9300000071525574,
+		"roadClosure": false,
+		"coordinates": {
+		"coordinate": [
+			{
+			"latitude": 52.40606308516981,
+			"longitude": 4.839773568917934
+			},
+			.....
+			{
+			"latitude": 52.410696500316845,
+			"longitude": 4.829543624378772
+			}
+		]
+		},
+		"@version": "traffic-service 3.2.021"
+	}
+	}
+
+	Useful data:
+		frc:
+			Functional Road Class. This indicates the road type:
+	
+			FRC0: Motorway, freeway or other major road
+			FRC1: Major road, less important than a motorway
+			FRC2: Other major road
+			FRC3: Secondary road
+			FRC4: Local connecting road
+			FRC5: Local road of high importance
+			FRC6: Local road
+	
+		currentSpeed:
+			The current average speed at the selected point, in the unit requested.
+			This is calculated from the currentTravelTime and the length of the selected segment.
+		freeFlowSpeed:
+			The free flow speed expected under ideal conditions, expressed in the unit requested. This is related to the freeFlowTravelTime.
+		roadClosure:
+			This indicates if the road is closed to traffic or not.
+			
+OpenStreetMaps api (overpass-api):
+	
+	{
+	"cycleway": "track", 
+	"highway": "secondary", 
+	"lanes": "3", 
+	"lanes:backward": "2", 
+	"lanes:forward": "1", 
+	"lcn_ref": "25", 
+	"maxspeed": "25 mph", 
+	"name": "Polk Street", 
+	"surface": "asphalt", 
+	"tiger:cfcc": "A41", 
+	"tiger:county": 
+	"San Francisco, CA", 
+	"tiger:name_type": "St"
+	}
+
+	Useful data:
+		https://taginfo.openstreetmap.org/tags
+		way.tags.highway:road_type
+		https://wiki.openstreetmap.org/wiki/Key:highway
+		way.tags.lanes / lanes:forward	
+		https://wiki.openstreetmap.org/wiki/Key:lanes
+		way.tags.surface
+		https://wiki.openstreetmap.org/wiki/Key:surface
+		way.tags.maxspeed
+		https://wiki.openstreetmap.org/wiki/Key:maxspeed
+		nodes.highway:'traffic_signals','turn_restrictions'
+		https://wiki.openstreetmap.org/wiki/Key:highway
+	
+Useful studies:
+	https://www.sciencedirect.com/science/article/pii/S2090447911000165
+	https://www.sciencedirect.com/science/article/pii/S2215016119302237#bib0035
