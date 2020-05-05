@@ -7,7 +7,6 @@ from urllib.request import urlopen
 
 if __name__ == '__main__':
 
-
     # pip install overpy
     # python overpass_speed.py 37.7833 -122.4167 500
 
@@ -23,9 +22,7 @@ if __name__ == '__main__':
                             """)
         results_list = []
         for way in result.ways:
-            road = {}
-            road["name"] = way.tags.get("name", "n/a")
-            road["speed_limit"] = way.tags.get("maxspeed", "n/a")
+            road = {"name": way.tags.get("name", "n/a"), "speed_limit": way.tags.get("maxspeed", "n/a")}
             nodes = []
             for node in way.nodes:
                 nodes.append((node.lat, node.lon))
@@ -33,10 +30,11 @@ if __name__ == '__main__':
             results_list.append(road)
 
         data = json.dumps(result.ways[0].tags, default=lambda o: o.__dict__)
-        with open('data.txt', 'w') as outfile:
+        with open('data.json', 'w') as outfile:
             outfile.write(str(data))
 
         return results_list
+
 
     def tomtom(coordinates):
 
@@ -57,8 +55,9 @@ if __name__ == '__main__':
 
         return result
 
-    results = maxspeed((37.7833, -122.4167), 500)
-    results2 = tomtom((37.7802716, -122.4186146))
+
+    results = maxspeed((52.235086, 20.965497), 500)
+    results2 = tomtom((52.235086, 20.965497))
 
     intersection = helper.get_intersection(
         "Straße der Nationen",
@@ -68,5 +67,3 @@ if __name__ == '__main__':
 
     print(json.dumps(results, indent=2))
     print(json.dumps(results2, indent=2))
-
-
