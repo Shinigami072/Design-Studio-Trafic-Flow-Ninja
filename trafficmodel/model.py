@@ -15,7 +15,7 @@ class Model:
                                   extra_lateral_clearance: float, bendiness: float, density_of_intersections: float,
                                   percentile_speed=0.5) -> float:
 
-        measurement_duration = sum(speed_in_hours[1])
+        measurement_duration = sum(x[1] for x in speed_in_hours)
 
         daily_traffic = sum([self.get_traffic_for_time_period(speed_in_hours[i][0], sd_paved_width, paved_width,
                                                               extra_lateral_clearance, bendiness,
@@ -30,14 +30,17 @@ class Model:
                                     extra_lateral_clearance: float,bendiness: float, density_of_intersections: float,
                                     duration_hours=1, percentile_speed=0.5) -> float:
 
+        # based on wiki.models Equation 1
         segment_characteristic = ((paved_width ** 0.079) * (extra_lateral_clearance ** 0.008) *
                                   (bendiness ** (-0.027)) * (density_of_intersections ** (-0.036)))
 
         # based on wiki.models Equation 1
-        return math.exp(((math.log(speed) - (self.CONSTANT_COEFF + self.SEGMENT_CHARACTERISTIC_COEFF *
-                                             math.log(segment_characteristic) + self.SD_PAVED_WIDTH__COEFF *
-                                             math.log(sd_paved_width) + (1/self.THETA) * math.log(percentile_speed)))
-                         / self.AVERAGE_DAILY_TRAFFIC_COEFF)) * (duration_hours/24)
+        daily_traffic = math.exp(((math.log(speed) - (self.CONSTANT_COEFF + self.SEGMENT_CHARACTERISTIC_COEFF *
+                                   math.log(segment_characteristic) + self.SD_PAVED_WIDTH__COEFF *
+                                   math.log(sd_paved_width) + (1/self.THETA) * math.log(percentile_speed)))
+                                  / self.AVERAGE_DAILY_TRAFFIC_COEFF)) * (duration_hours/24)
+
+        return daily_traffic
 
 
 # to be deleted later
