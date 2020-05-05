@@ -1,11 +1,20 @@
-import road
 from abc import ABC
 from typing import Tuple, List
 
+import road
+
 
 class RoadProvider(ABC):
-    def provide(self, location: Tuple[float, float], name: str = None) -> road.Road:
+    class RoadId(ABC):
         pass
 
-    def names(self, location: Tuple[float, float]) -> List[str]:
-        pass
+    def provide(self, name: RoadId) -> road.Road:
+        raise NotImplementedError
+
+    def names(self, location: Tuple[float, float]) -> List[RoadId]:
+        raise NotImplementedError
+
+
+def road_provider(module: str) -> RoadProvider:
+    mod = __import__(module)
+    return mod._create_road_provider()
