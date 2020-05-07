@@ -1,8 +1,11 @@
+from decimal import Decimal
 from typing import Tuple, List
 
 from road import Road, Fragment, RoadProvider, road_provider
 import overpy
 import overpy.helper
+import default_road_provider.polish_roads as pr
+import default_road_provider.geo_utils as g_utils
 
 
 class DefaultRoadProvider(RoadProvider):
@@ -26,20 +29,39 @@ class DefaultRoadProvider(RoadProvider):
 
     @staticmethod
     def _way_to_id(way: overpy.Way) -> DefaultRoadId:
-        return DefaultRoadProvider.DefaultRoadId(way.id, way.tags.get("unsigned_ref",""), str(way.tags.get("name", "")))
+        return DefaultRoadProvider.DefaultRoadId(way.id, way.tags.get("unsigned_ref", ""),
+                                                 str(way.tags.get("name", "")))
 
     def __init__(self):
         self.api = overpy.Overpass()
 
     @staticmethod
+    def _coords_to_length(coords: List[Tuple[Decimal, Decimal]]) -> float:
+        return sum([g_utils.coords_to_m(_from, _to) for _from, _to in zip(coords[:-1], coords[1:])])
+
+    @staticmethod
+    def _coords_to_bendiness(coords: List[Tuple[Decimal, Decimal]]) -> float:
+        total_bend = sum(
+            [g_utils.coords_to_m(_from, _to) for _from, _through, _to in zip(coords[:-2], coords[1:-1], coords[2:])])
+        return total_bend
+
+    @staticmethod
     def _way_to_fragments(way: overpy.Way) -> List[Fragment]:
         # TODO make this transformation use actual data
-        width: float = 1.5 * int(way.tags.get("lanes", 1))
-        speed: float = 1.1 * float(way.tags.get("maxspeed", 0))
-        return [Fragment(width=width, speed=speed)]
+        nodes: List[overpy.Node] = way.nodes
+        coords: List[Tuple[Decimal, Decimal]] = [(Decimal(c.lon), Decimal(c.lat)) for c in nodes]
+        width: float = way.tags.get("width", pr.min_width(way))
+        speed: float = float(way.tags.get("maxspeed", 0))
+        length: float = DefaultRoadProvider._coords_to_length(coords)
+        bendiness: float = DefaultRoadProvider._coords_to_bendiness(coords)
+        return [Fragment(width=width, speed=speed, length=length, coords=coords, bendiness=bendiness)]
+
+    @staticmethod
+    def _way_to_primary_coord(way: overpy.Way) -> Tuple[Decimal, Decimal]:
+        return Decimal(way.center_lat), Decimal(way.center_lon)
 
     def provide(self, name: DefaultRoadId) -> Road:
-        #TODO limit results to only car roads
+        # TODO limit results to only car roads
         result = self.api.query(
             """
                 (
@@ -51,9 +73,9 @@ class DefaultRoadProvider(RoadProvider):
                 out meta;
             """.format(id=name.road_id, ref=name.ref, name=name.name)
         )
-
+        ways = sorted(result.ways, key=self._way_to_primary_coord)
         road_fragments = [i
-                          for way in result.ways
+                          for way in ways
                           for i in self._way_to_fragments(way)]
         return Road(name.name, road_fragments)
 
