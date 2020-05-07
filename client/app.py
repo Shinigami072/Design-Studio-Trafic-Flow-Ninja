@@ -1,3 +1,5 @@
+import time
+
 import overpy
 import overpy.helper as helper
 import sys
@@ -5,7 +7,25 @@ import simplejson as json
 
 from urllib.request import urlopen
 
-if __name__ == '__main__':
+from road import road_provider
+
+
+def main():
+    prov = road_provider("default_road_provider")
+    coord = (52.2565098, 21.0291088)
+    try:
+        for road_id in prov.names(coord):
+            print(prov.provide(road_id))
+    except overpy.exception.OverpassTooManyRequests:
+        print("TooManyReqests")
+        time.sleep(180)
+        main()
+
+
+if __name__ == "__main__":
+    main()
+
+if __name__ == '__main__' and False:
 
     # pip install overpy
     # python overpass_speed.py 37.7833 -122.4167 500

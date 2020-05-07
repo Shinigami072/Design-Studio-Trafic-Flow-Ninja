@@ -1,6 +1,7 @@
 from decimal import Decimal
 from typing import Tuple, List
 
+from default_road_provider.tomtom import TomTomClient
 from road import Road, Fragment, RoadProvider, road_provider
 import overpy
 import overpy.helper
@@ -34,6 +35,7 @@ class DefaultRoadProvider(RoadProvider):
 
     def __init__(self):
         self.api = overpy.Overpass()
+        self.tomtom = TomTomClient()
 
     @staticmethod
     def _coords_to_length(coords: List[Tuple[Decimal, Decimal]]) -> float:
@@ -45,34 +47,51 @@ class DefaultRoadProvider(RoadProvider):
             [g_utils.coords_to_m(_from, _to) for _from, _through, _to in zip(coords[:-2], coords[1:-1], coords[2:])])
         return total_bend
 
-    @staticmethod
-    def _way_to_fragments(way: overpy.Way) -> List[Fragment]:
+    def _way_to_fragments(self, way: overpy.Way) -> List[Fragment]:
         # TODO make this transformation use actual data
         nodes: List[overpy.Node] = way.nodes
-        coords: List[Tuple[Decimal, Decimal]] = [(Decimal(c.lon), Decimal(c.lat)) for c in nodes]
-        width: float = way.tags.get("width", pr.min_width(way))
-        speed: float = float(way.tags.get("maxspeed", 0))
+        center_coords = self._way_to_center_coords(way)
+        coords: List[Tuple[Decimal, Decimal]] = [(Decimal(c.lat), Decimal(c.lon)) for c in nodes]
+        width: float = float(way.tags.get("width", pr.min_width(way)))
+        speed: float = self.tomtom.get_current_speed(coords[len(coords) // 2])
         length: float = DefaultRoadProvider._coords_to_length(coords)
-        bendiness: float = DefaultRoadProvider._coords_to_bendiness(coords)
+
+        if speed is None:
+            for c in coords:
+                speed: float = self.tomtom.get_current_speed(c)
+                if speed is not None:
+                    break
+        # TODO bendiness: float = DefaultRoadProvider._coords_to_bendiness(coords)
+        bendiness = None
         return [Fragment(width=width, speed=speed, length=length, coords=coords, bendiness=bendiness)]
 
     @staticmethod
-    def _way_to_primary_coord(way: overpy.Way) -> Tuple[Decimal, Decimal]:
-        return Decimal(way.center_lat), Decimal(way.center_lon)
+    def _way_to_center_coords(way: overpy.Way) -> Tuple[Decimal, Decimal]:
+        center_lat = way.center_lat
+        nodes: List[overpy.Node] = way.nodes
+        node_count = len(nodes)
+        if center_lat is None:
+            center_lat = sum([n.lat for n in nodes]) / node_count
+        center_lon = way.center_lon
+
+        if center_lon is None:
+            center_lon = sum([n.lon for n in nodes]) / node_count
+
+        return Decimal(center_lat), Decimal(center_lon)
 
     def provide(self, name: DefaultRoadId) -> Road:
         result = self.api.query(
             """
                 (
                   relation(id:{id});
-                  way[name="{name}"][unsigned_ref="{ref}"][highway~"motorway|motorway_link|trunk|trunk_link|primary|primary_link|secondary|tertiary|unclassified|residential|living_street|service|track"];
+                  way[name="{name}"][unsigned_ref="{ref}"][highway~"^(motorway|motorway_link|trunk|trunk_link|primary|primary_link|secondary|tertiary|unclassified|residential|living_street|service|track)$"];
                   node(w);
                 );
                 
                 out meta;
             """.format(id=name.road_id, ref=name.ref, name=name.name)
         )
-        ways = sorted(result.ways, key=self._way_to_primary_coord)
+        ways = sorted(result.ways, key=self._way_to_center_coords)
         road_fragments = [i
                           for way in ways
                           for i in self._way_to_fragments(way)]
@@ -93,9 +112,3 @@ class DefaultRoadProvider(RoadProvider):
 
 def _create_road_provider() -> RoadProvider:
     return DefaultRoadProvider()
-
-
-if __name__ == "__main__":
-    prov = road_provider("default_road_provider")
-    for road_id in prov.names((52.2565098, 21.0291088)):
-        prov.provide(road_id)
