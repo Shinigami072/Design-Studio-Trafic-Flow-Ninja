@@ -12,7 +12,7 @@ from road import road_provider
 
 def main():
     prov = road_provider("default_road_provider")
-    coord = (52.2565098, 21.0291088)
+    coord = (49.66006, 19.26671)
     try:
         for road_id in prov.names(coord):
             print(prov.provide(road_id))

@@ -42,10 +42,11 @@ class DefaultRoadProvider(RoadProvider):
         return sum([g_utils.coords_to_m(_from, _to) for _from, _to in zip(coords[:-1], coords[1:])])
 
     @staticmethod
-    def _coords_to_bendiness(coords: List[Tuple[Decimal, Decimal]]) -> float:
+    def _coords_to_bendiness(coords: List[Tuple[Decimal, Decimal]], length: float) -> float:
         total_bend = sum(
-            [g_utils.coords_to_m(_from, _to) for _from, _through, _to in zip(coords[:-2], coords[1:-1], coords[2:])])
-        return total_bend
+            [g_utils.coords_to_bend_deg(_from, _through, _to) for _from, _through, _to in zip(coords[:-2], coords[1:-1], coords[2:])])
+
+        return total_bend/(length/1000)
 
     def _way_to_fragments(self, way: overpy.Way) -> List[Fragment]:
         # TODO make this transformation use actual data
@@ -61,8 +62,8 @@ class DefaultRoadProvider(RoadProvider):
                 speed: float = self.tomtom.get_current_speed(c)
                 if speed is not None:
                     break
-        # TODO bendiness: float = DefaultRoadProvider._coords_to_bendiness(coords)
-        bendiness = None
+        bendiness: float = DefaultRoadProvider._coords_to_bendiness(coords, length)
+
         return [Fragment(width=width, speed=speed, length=length, coords=coords, bendiness=bendiness)]
 
     @staticmethod
