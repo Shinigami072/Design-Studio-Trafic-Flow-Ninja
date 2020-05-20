@@ -45,7 +45,7 @@ _widths: Dict[PolishRoadClass, float] = {
     PolishRoadClass.GP: 3.50,
     PolishRoadClass.G: 3.50,
     PolishRoadClass.Z: 3.00,
-    PolishRoadClass.L: 7.75,
+    PolishRoadClass.L: 2.75,
     PolishRoadClass.D: 2.50,
 }
 
