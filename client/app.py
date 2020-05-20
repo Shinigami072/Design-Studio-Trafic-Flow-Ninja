@@ -6,16 +6,19 @@ import sys
 import simplejson as json
 
 from urllib.request import urlopen
+from controller.Controller import Controller
 
 from road import road_provider
 
 
 def main():
-    prov = road_provider("default_road_provider")
+    #prov = road_provider("default_road_provider")
     coord = (49.66006, 19.26671)
+    controller = Controller(coord)
+    
     try:
-        for road_id in prov.names(coord):
-            print(prov.provide(road_id))
+        res = controller.get_result()
+        print(res)
     except overpy.exception.OverpassTooManyRequests:
         print("TooManyReqests")
         time.sleep(180)
