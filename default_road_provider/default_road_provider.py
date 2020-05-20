@@ -84,8 +84,7 @@ class DefaultRoadProvider(RoadProvider):
         result = self.api.query(
             """
                 (
-                  relation(id:{id});
-                  way[name="{name}"][unsigned_ref="{ref}"][highway~"^(motorway|motorway_link|trunk|trunk_link|primary|primary_link|secondary|tertiary|unclassified|residential|living_street|service|track)$"];
+                  way(id:{id})[name="{name}"][unsigned_ref="{ref}"][highway~"^(motorway|motorway_link|trunk|trunk_link|primary|primary_link|secondary|tertiary|unclassified|residential|living_street|service|track)$"];
                   node(w);
                 );
                 
