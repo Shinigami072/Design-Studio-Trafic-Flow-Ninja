@@ -19,19 +19,22 @@ class Controller:
     def get_result(self):
         #To be done
         roads = self.generate_roads()
+        test_road = roads[0]
         #speeds dont fit model, they should be list of tuples
         #speeds = [(60, 3), (50, 2), (40, 1)]
         #2nd parameter is time that speed was measured in hours, to be fixed
         speeds = []
-        for road in roads:
+        for fragment in test_road.fragments:
             # get rid of random
-            speeds.append([(fragment.speed, randrange(1, 5)) for fragment in road.fragments])
+            speeds.append((fragment.speed, randrange(1, 5)))
 
         #width from roads?
+        #temporary road for testing
+
         sd_paved_width = 0.5
-        paved_width = 4.4
+        paved_width = test_road.fragments[0].width
         extra_lateral_clearance = 1.4
-        bendiness = 199.3
+        bendiness = test_road.fragments[0].bendiness
         density_of_intersections = 4.3
         model = Model()
         average_traffic = model.get_average_daily_traffic(speeds, sd_paved_width, paved_width, extra_lateral_clearance,
@@ -39,4 +42,4 @@ class Controller:
         hourly_traffic = model.get_traffic_for_time_period(roads[0].fragments[0].speed, sd_paved_width, paved_width,
                                                            extra_lateral_clearance,bendiness,density_of_intersections)
 
-        return (average_traffic, hourly_traffic)
+        return [average_traffic, hourly_traffic]
