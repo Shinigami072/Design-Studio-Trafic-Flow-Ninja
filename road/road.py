@@ -9,7 +9,6 @@ class Fragment:
                  length: float,
                  coords: List[Tuple[Decimal, Decimal]],
                  bendiness: float):
-        # self.road_width = 1.5
         self.bendiness = bendiness
         self.coords = coords
         self.speed = speed

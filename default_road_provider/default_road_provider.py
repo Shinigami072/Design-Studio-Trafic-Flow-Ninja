@@ -2,7 +2,7 @@ from decimal import Decimal
 from typing import Tuple, List
 
 from default_road_provider.tomtom import TomTomClient
-from road import Road, Fragment, RoadProvider, road_provider
+from road import Road, Fragment, RoadProvider
 import overpy
 import overpy.helper
 import default_road_provider.polish_roads as pr
@@ -52,7 +52,6 @@ class DefaultRoadProvider(RoadProvider):
     def _way_to_fragments(self, way: overpy.Way) -> List[Fragment]:
         # TODO make this transformation use actual data
         nodes: List[overpy.Node] = way.nodes
-        center_coords = self._way_to_center_coords(way)
         coords: List[Tuple[Decimal, Decimal]] = [(Decimal(c.lat), Decimal(c.lon)) for c in nodes]
         width: float = float(way.tags.get("width", pr.min_width(way)))
         speed: float = self.tomtom.get_current_speed(coords[len(coords) // 2])

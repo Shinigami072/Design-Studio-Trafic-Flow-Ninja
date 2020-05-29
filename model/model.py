@@ -3,6 +3,7 @@ import math
 from road import Road
 
 
+# TODO include injection infrastructure for model
 class Model:
     # as in wiki.models Table 2
     CONSTANT_COEFF = 4.846
@@ -109,6 +110,9 @@ class Model:
 
         return daily_traffic
 
+
+def model_provider(module: str) -> Model:
+    return Model()
 # # to be deleted later
 # def test_traffic_model():
 #     speeds = [(60, 3), (50, 2), (40, 1)]

@@ -33,6 +33,7 @@ def coords_to_m(
 
     return 6367_000 * c
 
+
 def coords_to_bearing(
         coords_from: Tuple[Decimal, Decimal],
         coords_to: Tuple[Decimal, Decimal]) -> float:
@@ -50,10 +51,10 @@ def coords_to_bearing(
     d_lat1 = _to_radians(lat1)
     d_lat2 = _to_radians(lat2)
 
-    y = sin(d_lat2-d_lat1) * cos(d_long2)
+    y = sin(d_lat2 - d_lat1) * cos(d_long2)
     x = cos(d_long1) * sin(d_long2) - sin(d_long1) * cos(d_long2) * cos(d_lat2 - d_lat1)
     bearing_rad = atan2(y, x)
-    bearing = bearing_rad*180/pi
+    bearing = bearing_rad * 180 / pi
 
     return bearing
 
@@ -64,12 +65,13 @@ def coords_to_bend_deg(
         coords_to: Tuple[Decimal, Decimal]) -> float:
     """
     Calculate bend between three coordinates in degrees
+    :param coords_through:
     :param coords_from: geo-coordinates,from
     :param coords_to: geo-coordinates to
     :return: degrees
     """
     bend_deg = min(abs(coords_to_bearing(coords_through, coords_to) - coords_to_bearing(coords_from, coords_through)),
-                   360-abs(coords_to_bearing(coords_through, coords_to) -
-                           coords_to_bearing(coords_from, coords_through)))
+                   360 - abs(coords_to_bearing(coords_through, coords_to) -
+                             coords_to_bearing(coords_from, coords_through)))
 
     return bend_deg
