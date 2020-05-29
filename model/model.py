@@ -36,13 +36,19 @@ class Model:
         mean_bendiness = sum([bendiness * length for bendiness, length in bends]) / sum([length for _, length in bends])
         return mean_bendiness
 
+    @staticmethod
+    def _road_to_intersection_density(road: Road):
+        return road.intersections / (road.length() * 1000)
+
     # TODO this is an api change to aid with refactor- this should probably be executed with mor forethought
     def get_average_daily_traffic(self, road: Road, percentile_speed=0.5):
         speed_data = Model._road_to_speed_data(road)
         width, sd_width = Model._road_to_width(road)
         bendiness = Model._road_to_bendiness(road)
 
-        density_of_intersections = 4.3
+        density_of_intersections = Model._road_to_intersection_density(road)  # and this is..too powerfull?
+        print("density", density_of_intersections)
+        print("road:", road,road.length())
         extra_lateral_clearance = 1.4
 
         return self._get_average_daily_traffic(
@@ -60,7 +66,8 @@ class Model:
         speed = road.fragments[0].speed
         width, sd_width = Model._road_to_width(road)
         bendiness = Model._road_to_bendiness(road)
-        density_of_intersections = 4.3
+
+        density_of_intersections = Model._road_to_intersection_density(road)
         extra_lateral_clearance = 1.4
 
         return self._get_traffic_for_time_period(

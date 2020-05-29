@@ -31,14 +31,22 @@ class Fragment:
 
 
 class Road:
-    def __init__(self, name: str, fragments: List[Fragment]):
+    def __init__(self, name: str, fragments: List[Fragment], intersections: int):
         self.name = name
         self.fragments = fragments
+        self.intersections = intersections
+        if len(fragments) == 0:
+            raise ValueError("empty fragment list")
+
+    def length(self):
+        return sum([fragment.length for fragment in self.fragments])
 
     def __str__(self):
-        return "{name}: {fragments}".format(
+        return "{name}: {fragments} (intersections={intersections})".format(
             name=self.name,
-            fragments=self.fragments)
+            fragments=self.fragments,
+            intersections=self.intersections
+        )
 
     def __repr__(self):
         return self.__str__()
