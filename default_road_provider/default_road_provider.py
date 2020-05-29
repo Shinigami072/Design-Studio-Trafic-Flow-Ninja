@@ -44,9 +44,10 @@ class DefaultRoadProvider(RoadProvider):
     @staticmethod
     def _coords_to_bendiness(coords: List[Tuple[Decimal, Decimal]], length: float) -> float:
         total_bend = sum(
-            [g_utils.coords_to_bend_deg(_from, _through, _to) for _from, _through, _to in zip(coords[:-2], coords[1:-1], coords[2:])])
+            [g_utils.coords_to_bend_deg(_from, _through, _to) for _from, _through, _to in
+             zip(coords[:-2], coords[1:-1], coords[2:])])
 
-        return total_bend/(length/1000)
+        return total_bend / (length / 1000)
 
     def _way_to_fragments(self, way: overpy.Way) -> List[Fragment]:
         # TODO make this transformation use actual data
@@ -83,11 +84,17 @@ class DefaultRoadProvider(RoadProvider):
     def provide(self, name: DefaultRoadId) -> Road:
         result = self.api.query(
             """
+                
+                way(id:{id});
+                node(w);
+                complete {{
                 (
-                  way(id:{id})[name="{name}"][unsigned_ref="{ref}"][highway~"^(motorway|motorway_link|trunk|trunk_link|primary|primary_link|secondary|tertiary|unclassified|residential|living_street|service|track)$"];
-                  node(w);
+                    way(bn)[name="{name}"][unsigned_ref="{ref}"][highway~"^(motorway|motorway_link|trunk|trunk_link|primary|primary_link|secondary|tertiary|unclassified|residential|living_street|service|track)$"];
+                    node(w);  	
                 );
                 
+                }};
+
                 out meta;
             """.format(id=name.road_id, ref=name.ref, name=name.name)
         )
