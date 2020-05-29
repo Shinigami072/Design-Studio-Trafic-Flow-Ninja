@@ -1,8 +1,7 @@
-from road.road_provider import road_provider, RoadProvider
-from model.model import Model, model_provider
-from road.road import Road
 from typing import Tuple, List
-from random import randrange
+
+from model.model import Model, model_provider
+from road.road_provider import road_provider, RoadProvider
 
 
 class Controller:

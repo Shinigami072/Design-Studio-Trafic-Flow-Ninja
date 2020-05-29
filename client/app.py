@@ -1,14 +1,4 @@
-import time
-
-import overpy
-import overpy.helper as helper
-import sys
-import simplejson as json
-
-from urllib.request import urlopen
 from controller.Controller import Controller
-
-from road import road_provider
 
 
 def main():
