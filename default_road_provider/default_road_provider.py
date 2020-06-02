@@ -92,16 +92,38 @@ class DefaultRoadProvider(RoadProvider):
                     node(w);  	
                 );
                 
-                }};
-
                 out meta;
             """.format(id=name.road_id, ref=name.ref, name=name.name)
         )
+
         ways = sorted(result.ways, key=self._way_to_center_coords)
         road_fragments = [i
                           for way in ways
                           for i in self._way_to_fragments(way)]
-        return Road(name.name, road_fragments)
+
+        # This could be handled by overpass - but our api wrapper does not support custom types -> so we have to work
+        # around it
+        # TODO reduce the ammount of streets detected as intersections
+        result = self.api.query(
+            """
+
+                way(id:{id});
+                node(w);
+                complete {{
+                (
+                    way(bn)[name="{name}"][unsigned_ref="{ref}"][highway~"^(motorway|motorway_link|trunk|trunk_link|primary|primary_link|secondary|tertiary|unclassified|residential|living_street|service|track)$"];
+                    node(w);  	
+                ) -> .searched_way;
+
+                }};
+                
+                way(around.searched_way:0)[name!="{name}"][highway~"^(motorway|motorway_link|trunk|trunk_link|primary|primary_link|secondary|tertiary|unclassified|residential|living_street|service|track)$"];
+                
+                out meta;
+            """.format(id=name.road_id, ref=name.ref, name=name.name)
+        )
+        intersections = len(result.ways)
+        return Road(name.name, road_fragments, intersections)
 
     def names(self, location: Tuple[float, float]) -> List[DefaultRoadId]:
         lat, lon = location
