@@ -38,7 +38,7 @@ class Model:
 
     @staticmethod
     def _road_to_intersection_density(road: Road):
-        return road.intersections / (road.length() * 1000)
+        return road.intersections / (road.length() / 1000)
 
     # TODO this is an api change to aid with refactor- this should probably be executed with mor forethought
     def get_average_daily_traffic(self, road: Road, percentile_speed=0.5):
