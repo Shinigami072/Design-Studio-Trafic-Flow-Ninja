@@ -5,6 +5,7 @@ from typing import List, Tuple
 class Fragment:
     def __init__(self,
                  width: float,
+                 extra_lateral_clearance: float,
                  speed: float,
                  length: float,
                  coords: List[Tuple[Decimal, Decimal]],
@@ -13,16 +14,20 @@ class Fragment:
         self.coords = coords
         self.speed = speed
         self.width = width
+        self.extra_lateral_clearance = extra_lateral_clearance
         self.length = length
 
     def __str__(self):
         return "[bendiness = {bendiness}, " \
                "speed = {speed:.2f}km/h, " \
                "width = {width:.2f}m, " \
+               "extra_lateral_clearance = {extra_lateral_clearance:.2f}m, " \
                "length = {length:.2f}m]" \
             .format(bendiness=self.bendiness,
                     speed=self.speed if self.speed is not None else 0,
                     width=self.width if self.width is not None else 0,
+                    extra_lateral_clearance=
+                    self.extra_lateral_clearance if self.extra_lateral_clearance is not None else 0,
                     length=self.length if self.length is not None else 0
                     )
 

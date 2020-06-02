@@ -49,11 +49,17 @@ class DefaultRoadProvider(RoadProvider):
 
         return total_bend / (length / 1000)
 
+    @staticmethod
+    def _have_shoulder(way: overpy.Way) -> bool:
+        return way.tags.get("shoulder", "no") != "no" or way.tags.get("shoulder:both", "no") != "no"
+
     def _way_to_fragments(self, way: overpy.Way) -> List[Fragment]:
         # TODO make this transformation use actual data
         nodes: List[overpy.Node] = way.nodes
         coords: List[Tuple[Decimal, Decimal]] = [(Decimal(c.lat), Decimal(c.lon)) for c in nodes]
         width: float = float(way.tags.get("width", pr.min_width(way)))
+        extra_lateral_clearance: float = float(
+            way.tags.get("shoulder:width", pr.min_extra_lateral_clearance(way, self._have_shoulder(way))))
         speed: float = self.tomtom.get_current_speed(coords[len(coords) // 2])
         length: float = DefaultRoadProvider._coords_to_length(coords)
 
@@ -64,7 +70,8 @@ class DefaultRoadProvider(RoadProvider):
                     break
         bendiness: float = DefaultRoadProvider._coords_to_bendiness(coords, length)
 
-        return [Fragment(width=width, speed=speed, length=length, coords=coords, bendiness=bendiness)]
+        return [Fragment(width=width, extra_lateral_clearance=extra_lateral_clearance, speed=speed, length=length,
+                         coords=coords, bendiness=bendiness)]
 
     @staticmethod
     def _way_to_center_coords(way: overpy.Way) -> Tuple[Decimal, Decimal]:
