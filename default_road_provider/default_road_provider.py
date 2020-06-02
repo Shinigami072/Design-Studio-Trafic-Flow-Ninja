@@ -80,6 +80,14 @@ class DefaultRoadProvider(RoadProvider):
 
         return Decimal(center_lat), Decimal(center_lon)
 
+    @staticmethod
+    def _ways_to_number_of_intersections(ways: List[overpy.Way]):
+        local_intersections = 0
+        for way in ways:
+            if way.tags.get("surface") != "asphalt" and (way.tags.get("highway") in ["living_street", "service", "track"]):
+                local_intersections += 1
+        return len(ways) - local_intersections
+
     def provide(self, name: DefaultRoadId) -> Road:
         result = self.api.query(
             """
@@ -122,7 +130,7 @@ class DefaultRoadProvider(RoadProvider):
                 out meta;
             """.format(id=name.road_id, ref=name.ref, name=name.name)
         )
-        intersections = len(result.ways)
+        intersections = self._ways_to_number_of_intersections(result.ways)
         return Road(name.name, road_fragments, intersections)
 
     def names(self, location: Tuple[float, float]) -> List[DefaultRoadId]:
