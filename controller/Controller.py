@@ -21,7 +21,7 @@ class Controller:
     def get_result(self, name: RoadProvider.RoadId):
         road = self.provider.provide(name)
 
-        average_traffic = self.model.get_average_daily_traffic(road)
+        #average_traffic = self.model.get_average_daily_traffic(road)
         hourly_traffic = self.model.get_traffic_for_time_period(road)
 
-        return [average_traffic, hourly_traffic]
+        return hourly_traffic

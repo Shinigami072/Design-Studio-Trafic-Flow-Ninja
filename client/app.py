@@ -17,11 +17,11 @@ def main(pos: Tuple[float, float],
 
     if list_roads:
         for i in range(len(roads)):
-            print(i, roads[i])
+            print("road num:", i+1, " - name:", roads[i])
     elif len(roads) > 1:
         sys.stderr.write("WARNING: multiple roads detected")
 
-    print(
+    print("cars per hour: ",
         controller.get_result(
             roads[max(0, min(road, len(roads) - 1))]
         )
