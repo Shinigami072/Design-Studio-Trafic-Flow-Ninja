@@ -65,7 +65,8 @@ def min_width(way: Way) -> float:
         minimal legal width of this piece of road in meters
     """
     lanes = float(way.tags.get("lanes", 1))
-    return min([_widths[c] for c in _to_polish_class(way)]) * lanes
+    is_oneway = way.tags.get("oneway", "no") == "yes"
+    return min([_widths[c] for c in _to_polish_class(way)]) * (lanes/(1 if (is_oneway or lanes == 1) else 2))
 
 
 def min_extra_lateral_clearance(way: Way, have_shoulder: bool) -> float:

@@ -70,7 +70,7 @@ class Model:
 
     # TODO this is an api change to aid with refactor- this should probably be executed with mor fore thought
     def get_traffic_for_time_period(self, road: Road, duration_hours=1, percentile_speed=0.5):
-        speed = road.fragments[0].speed
+        speed = Model._road_to_speed(road)
         width = Model._road_to_width(road)
         bendiness = Model._road_to_bendiness(road)
 
