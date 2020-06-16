@@ -26,7 +26,7 @@ def main(pos: Tuple[float, float],
     elif len(roads) > 1:
         sys.stderr.write("WARNING: multiple roads detected")
 
-    print("cars per hour: ",
+    print("cars per day: ",
         controller.get_result(
             roads[max(0, min(road, len(roads) - 1))], lookup_range/2, pos
         )
