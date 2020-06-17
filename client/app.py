@@ -10,7 +10,7 @@ def main(pos: Tuple[float, float],
          lookup_range: float,
          list_roads: bool = False,
          road: int = 0,
-         road_provider_name: str = "default_road_provider"):
+         road_provider_name: str = "cache_road_provider"):
     controller = Controller(
         provider=road_provider(road_provider_name)
     )
@@ -37,7 +37,7 @@ if __name__ == "__main__":
                         help="length of road taken into account (real road length will be slightly bigger)")
     parser.add_argument("--list-roads", action='store_true', help="(toggle) List all roads at a certain position")
     parser.add_argument("--road", default=0, help="which road to chose (only has effect if there are multiple roads)")
-    parser.add_argument("--road-provider", default="default_road_provider",
+    parser.add_argument("--road-provider", default="cache_road_provider",
                         help="alternate module providing road geometry")
     options = parser.parse_args()
 
