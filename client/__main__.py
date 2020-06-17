@@ -41,7 +41,7 @@ if __name__ == "__main__":
                         help="length of road taken into account (real road length will be slightly bigger)")
     parser.add_argument("--list-roads", action='store_true', help="(toggle) List all roads at a certain position")
     parser.add_argument("--road", default=0, help="which road to chose (only has effect if there are multiple roads)")
-    parser.add_argument("--road-provider", default="default_road_provider",
+    parser.add_argument("--road-provider", default="cache_road_provider",
                         help="alternate module providing road geometry")
     parser.add_argument("--model", default="default_model",
                         help="alternate module processing road geometry")
