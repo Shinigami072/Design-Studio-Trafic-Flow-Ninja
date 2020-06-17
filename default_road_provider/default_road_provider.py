@@ -88,10 +88,15 @@ class DefaultRoadProvider(RoadProvider):
         return Decimal(center_lat), Decimal(center_lon)
 
     @staticmethod
-    def _ways_to_number_of_intersections(ways: List[overpy.Way]):
+    def _ways_to_number_of_intersections(selected_way: overpy.Way, ways: List[overpy.Way]):
         local_intersections = 0
         for way in ways:
-            if way.tags.get("surface") != "asphalt" and (way.tags.get("highway") in ["living_street", "service", "track"]):
+            if (selected_way.tags.get("highway") in ["motorway", "motorway_link", "trunk", "trunk_link"] \
+                and not way.tags.get("highway") in ["motorway", "motorway_link", "trunk", "trunk_link"]) \
+                    or selected_way.tags.get("ref") == way.tags.get("ref"):
+                local_intersections += 1
+            elif way.tags.get("surface") != "asphalt" \
+                    and (way.tags.get("highway") in ["living_street", "service", "track"]):
                 local_intersections += 1
         return len(ways) - local_intersections
 
@@ -139,7 +144,7 @@ class DefaultRoadProvider(RoadProvider):
                 out meta;
             """.format(id=name.road_id, ref=name.ref, name=name.name, radius=radius, lat=lat, lon=lon)
         )
-        intersections = self._ways_to_number_of_intersections(result.ways)
+        intersections = self._ways_to_number_of_intersections(ways[0], result.ways)
         return Road(name.name, road_fragments, intersections)
 
     def names(self, location: Tuple[float, float]) -> List[DefaultRoadId]:
