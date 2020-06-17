@@ -4,6 +4,7 @@ from default_model.model import Model, model
 from road.road_provider import RoadProvider
 from controller.result import Result
 
+
 class Controller:
 
     def __init__(self,
@@ -11,9 +12,6 @@ class Controller:
                  c_model: Model = model.model("default_model")):
         self.provider = provider
         self.model = c_model
-
-        # tomtom data
-        # other user data (optional)
 
     def query_roads(self, coordinates: Tuple[float, float]) -> List[RoadProvider.RoadId]:
         return self.provider.names(coordinates)

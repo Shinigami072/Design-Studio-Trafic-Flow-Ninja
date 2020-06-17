@@ -9,14 +9,14 @@ import json
 
 
 def main(pos: Tuple[float, float],
-         tomotom_key: str,
+         tomtom_key: str,
          lookup_range: float,
          list_roads: bool = False,
          road: int = 0,
          road_provider_name: str = "default_road_provider",
          model_name: str = "default_model"):
     controller = Controller(
-        provider=road_provider(road_provider_name, tomotom_key),
+        provider=road_provider(road_provider_name, tomtom_key),
         c_model=model.model(model_name)
     )
     print("Road Query...")
@@ -25,15 +25,15 @@ def main(pos: Tuple[float, float],
     if list_roads:
         for i in range(len(roads)):
             print("road num:", i + 1, " - name:", roads[i])
-    elif len(roads) > 1:
-        sys.stderr.write("WARNING: multiple roads detected")
+    else:
+        if len(roads) > 1:
+            sys.stderr.write("WARNING: multiple roads detected\n")
+        for i in range(len(roads)):
+            print("road num:", i + 1, " - name:", roads[i])
 
-    result = json.loads(controller.get_result(
-              roads[max(0, min(road, len(roads) - 1))], lookup_range / 2, pos))
+        result = json.loads(controller.get_result(roads[max(0, min(road, len(roads) - 1))], lookup_range / 2, pos))
 
-    print("cars per day: ",
-           result.get("average_daily_traffic")
-          )
+        print("cars per day: ", result.get("average_daily_traffic"))
 
 
 if __name__ == "__main__":
@@ -53,10 +53,10 @@ if __name__ == "__main__":
     options = parser.parse_args()
 
     pos = (float(options.latitude), float(options.longitude))
-    tomotom_key = options.tomtom_key
+    tomtom_key = options.tomtom_key
     lookup_range = int(options.length)
-    list_roads = options.list_roads is not None
+    list_roads = options.list_roads
     road = int(options.road)
 
-    main(pos=pos, tomotom_key=tomotom_key, lookup_range=lookup_range, list_roads=list_roads, road=road,
+    main(pos=pos, tomtom_key=tomtom_key, lookup_range=lookup_range, list_roads=list_roads, road=road,
          road_provider_name=options.road_provider, model_name=options.model)
