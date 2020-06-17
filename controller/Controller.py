@@ -2,7 +2,7 @@ from typing import Tuple, List
 
 from default_model.model import Model, model
 from road.road_provider import RoadProvider
-
+from controller.result import Result
 
 class Controller:
 
@@ -23,4 +23,5 @@ class Controller:
 
         hourly_traffic = self.model.get_average_daily_traffic(road)
 
-        return hourly_traffic
+        result = Result(road, hourly_traffic)
+        return result.toJSON()

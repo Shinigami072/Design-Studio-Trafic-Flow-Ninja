@@ -5,6 +5,7 @@ from model import model
 from road.road_provider import road_provider
 import argparse
 import sys
+import json
 
 
 def main(pos: Tuple[float, float],
@@ -27,10 +28,11 @@ def main(pos: Tuple[float, float],
     elif len(roads) > 1:
         sys.stderr.write("WARNING: multiple roads detected")
 
+    result = json.loads(controller.get_result(
+              roads[max(0, min(road, len(roads) - 1))], lookup_range / 2, pos))
+
     print("cars per day: ",
-          controller.get_result(
-              roads[max(0, min(road, len(roads) - 1))], lookup_range / 2, pos
-          )
+           result.get("average_daily_traffic")
           )
 
 
