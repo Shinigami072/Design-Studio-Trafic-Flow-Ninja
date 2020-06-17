@@ -7,13 +7,11 @@ from road.road_provider import road_provider, RoadProvider
 class Controller:
 
     def __init__(self,
-                 provider: RoadProvider = road_provider("default_road_provider"),
-                 c_model: Model = model.model("default_model")):
+                 provider: RoadProvider = road_provider("cache_road_provider"),
+                 model: Model = model_provider("default_model")):
         self.provider = provider
         self.model = c_model
 
-        # tomtom data
-        # other user data (optional)
 
     def query_roads(self, coordinates: Tuple[float, float]) -> List[RoadProvider.RoadId]:
         return self.provider.names(coordinates)
