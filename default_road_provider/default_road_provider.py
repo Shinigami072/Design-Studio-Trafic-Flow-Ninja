@@ -4,6 +4,7 @@ from typing import Tuple, List
 from default_road_provider.tomtom import TomTomClient
 from road import Road, Fragment, RoadProvider
 import overpy
+import math
 import overpy.helper
 import default_road_provider.polish_roads as pr
 import default_road_provider.geo_utils as g_utils
@@ -54,7 +55,6 @@ class DefaultRoadProvider(RoadProvider):
         return way.tags.get("shoulder", "no") != "no" or way.tags.get("shoulder:both", "no") != "no"
 
     def _way_to_fragments(self, way: overpy.Way) -> List[Fragment]:
-        # TODO make this transformation use actual data
         nodes: List[overpy.Node] = way.nodes
         coords: List[Tuple[Decimal, Decimal]] = [(Decimal(c.lat), Decimal(c.lon)) for c in nodes]
         lane_width: float = float(way.tags.get("width", pr.min_width(way)))
@@ -70,7 +70,7 @@ class DefaultRoadProvider(RoadProvider):
                     break
         bendiness: float = DefaultRoadProvider._coords_to_bendiness(coords, length)
 
-        return [Fragment(width=lane_width+extra_lateral_clearance, extra_lateral_clearance=extra_lateral_clearance,
+        return [Fragment(width=lane_width + extra_lateral_clearance, extra_lateral_clearance=extra_lateral_clearance,
                          speed=speed, length=length, coords=coords, bendiness=bendiness)]
 
     @staticmethod
@@ -88,14 +88,28 @@ class DefaultRoadProvider(RoadProvider):
         return Decimal(center_lat), Decimal(center_lon)
 
     @staticmethod
-    def _ways_to_number_of_intersections(ways: List[overpy.Way]):
+    def _ways_to_number_of_intersections(selected_way: overpy.Way, ways: List[overpy.Way]):
         local_intersections = 0
         for way in ways:
-            if way.tags.get("surface") != "asphalt" and (way.tags.get("highway") in ["living_street", "service", "track"]):
-                local_intersections += 1
-        return len(ways) - local_intersections
+            if selected_way.tags.get("highway") in ["motorway", "motorway_link", "trunk", "trunk_link"]:
+                for way in ways:
+                    if not way.tags.get("highway") in ["motorway", "motorway_link", "trunk", "trunk_link"] \
+                            or (
+                            selected_way.tags.get("ref") == way.tags.get("ref") and way.tags.get("ref") is not None):
+                        local_intersections += 1
+                return math.ceil((len(ways) - local_intersections) / 2)
+            else:
+                for way in ways:
+                    if way.tags.get("surface") != "asphalt" \
+                            and (way.tags.get("highway") in ["living_street", "service", "track"]) \
+                            or (selected_way.tags.get("ref") == way.tags.get("ref") and way.tags.get("ref") is not None) \
+                            or (selected_way.tags.get("name") == way.tags.get("name")):
+                        local_intersections += 1
+                return len(ways) - local_intersections
 
-    def provide(self, name: DefaultRoadId) -> Road:
+    def provide(self, name: DefaultRoadId, radius: float, location: Tuple[float, float]) -> Road:
+        lat, lon = location
+
         result = self.api.query(
             """
                 
@@ -103,12 +117,12 @@ class DefaultRoadProvider(RoadProvider):
                 node(w);
                 complete {{
                 (
-                    way(bn)[name="{name}"][unsigned_ref="{ref}"][highway~"^(motorway|motorway_link|trunk|trunk_link|primary|primary_link|secondary|tertiary|unclassified|residential|living_street|service|track)$"];
+                    way(bn)[name="{name}"][unsigned_ref="{ref}"][highway~"^(motorway|motorway_link|trunk|trunk_link|primary|primary_link|secondary|tertiary|unclassified|residential|living_street|service|track)$"](around:{radius},{lat},{lon});
                     node(w);  	
                 );
                 
                 out meta;
-            """.format(id=name.road_id, ref=name.ref, name=name.name)
+            """.format(id=name.road_id, ref=name.ref, name=name.name, radius=radius, lat=lat, lon=lon)
         )
 
         ways = sorted(result.ways, key=self._way_to_center_coords)
@@ -116,9 +130,6 @@ class DefaultRoadProvider(RoadProvider):
                           for way in ways
                           for i in self._way_to_fragments(way)]
 
-        # This could be handled by overpass - but our api wrapper does not support custom types -> so we have to work
-        # around it
-        # TODO reduce the ammount of streets detected as intersections
         result = self.api.query(
             """
 
@@ -126,7 +137,7 @@ class DefaultRoadProvider(RoadProvider):
                 node(w);
                 complete {{
                 (
-                    way(bn)[name="{name}"][unsigned_ref="{ref}"][highway~"^(motorway|motorway_link|trunk|trunk_link|primary|primary_link|secondary|tertiary|unclassified|residential|living_street|service|track)$"];
+                    way(bn)[name="{name}"][unsigned_ref="{ref}"][highway~"^(motorway|motorway_link|trunk|trunk_link|primary|primary_link|secondary|tertiary|unclassified|residential|living_street|service|track)$"](around:{radius},{lat},{lon});
                     node(w);  	
                 ) -> .searched_way;
 
@@ -135,9 +146,9 @@ class DefaultRoadProvider(RoadProvider):
                 way(around.searched_way:0)[name!="{name}"][highway~"^(motorway|motorway_link|trunk|trunk_link|primary|primary_link|secondary|tertiary|unclassified|residential|living_street|service|track)$"];
                 
                 out meta;
-            """.format(id=name.road_id, ref=name.ref, name=name.name)
+            """.format(id=name.road_id, ref=name.ref, name=name.name, radius=radius, lat=lat, lon=lon)
         )
-        intersections = self._ways_to_number_of_intersections(result.ways)
+        intersections = self._ways_to_number_of_intersections(ways[0], result.ways)
         return Road(name.name, road_fragments, intersections)
 
     def names(self, location: Tuple[float, float]) -> List[DefaultRoadId]:
