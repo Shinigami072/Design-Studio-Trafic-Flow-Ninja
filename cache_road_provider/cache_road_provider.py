@@ -26,6 +26,9 @@ class CacheRoadProvider(RoadProvider):
         def __repr__(self):
             return "[{id}] {name}".format(id=self.road_id, name=self.name)
 
+    def __init__(self):
+        self.provider = road_provider("default_road_provider")
+
     @staticmethod
     def _cache_road(road: Road, radius: float, location: Tuple[float, float]):
         try:
@@ -37,7 +40,7 @@ class CacheRoadProvider(RoadProvider):
 
     @staticmethod
     def _get_cached_road(radius: float, location: Tuple[float, float]):
-        if os.path.exists("cache/" + str(radius) + "/" + str(location)+ ".pickle"):
+        if os.path.exists("cache/" + str(radius) + "/" + str(location) + ".pickle"):
             try:
                 with open("cache/" + str(radius) + "/" + str(location) + ".pickle", "rb") as pickle_in:
                     road = pickle.load(pickle_in)[0]
@@ -46,22 +49,16 @@ class CacheRoadProvider(RoadProvider):
         return road
 
     def provide(self, name: CacheRoadId, radius: float, location: Tuple[float, float]) -> Road:
-
         road = self._get_cached_road(radius, location)
 
         if road is None:
-            provider = road_provider("default_road_provider")
-            road = provider.provide(name, radius, location)
+            road = self.provider.provide(name, radius, location)
             self._cache_road(road, radius, location)
 
         return road
 
     def names(self, location: Tuple[float, float]) -> List[CacheRoadId]:
-
-        provider = road_provider("default_road_provider")
-        ways = provider.names(location)
-
-        return ways
+        return self.provider.names(location)
 
 
 def _create_road_provider() -> RoadProvider:
