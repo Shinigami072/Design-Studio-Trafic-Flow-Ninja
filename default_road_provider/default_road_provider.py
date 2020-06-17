@@ -34,9 +34,9 @@ class DefaultRoadProvider(RoadProvider):
         return DefaultRoadProvider.DefaultRoadId(way.id, way.tags.get("unsigned_ref", ""),
                                                  str(way.tags.get("name", "")))
 
-    def __init__(self):
+    def __init__(self, tomtom_key: str):
         self.api = overpy.Overpass()
-        self.tomtom = TomTomClient()
+        self.tomtom = TomTomClient(tomtom_key)
 
     @staticmethod
     def _coords_to_length(coords: List[Tuple[Decimal, Decimal]]) -> float:
@@ -53,25 +53,6 @@ class DefaultRoadProvider(RoadProvider):
     @staticmethod
     def _have_shoulder(way: overpy.Way) -> bool:
         return way.tags.get("shoulder", "no") != "no" or way.tags.get("shoulder:both", "no") != "no"
-
-    def _way_to_fragments(self, way: overpy.Way) -> List[Fragment]:
-        nodes: List[overpy.Node] = way.nodes
-        coords: List[Tuple[Decimal, Decimal]] = [(Decimal(c.lat), Decimal(c.lon)) for c in nodes]
-        lane_width: float = float(way.tags.get("width", pr.min_width(way)))
-        extra_lateral_clearance: float = float(
-            way.tags.get("shoulder:width", pr.min_extra_lateral_clearance(way, self._have_shoulder(way))))
-        speed: float = self.tomtom.get_current_speed(coords[len(coords) // 2])
-        length: float = DefaultRoadProvider._coords_to_length(coords)
-
-        if speed is None:
-            for c in coords:
-                speed: float = self.tomtom.get_current_speed(c)
-                if speed is not None:
-                    break
-        bendiness: float = DefaultRoadProvider._coords_to_bendiness(coords, length)
-
-        return [Fragment(width=lane_width + extra_lateral_clearance, extra_lateral_clearance=extra_lateral_clearance,
-                         speed=speed, length=length, coords=coords, bendiness=bendiness)]
 
     @staticmethod
     def _way_to_center_coords(way: overpy.Way) -> Tuple[Decimal, Decimal]:
@@ -106,6 +87,29 @@ class DefaultRoadProvider(RoadProvider):
                             or (selected_way.tags.get("name") == way.tags.get("name")):
                         local_intersections += 1
                 return len(ways) - local_intersections
+
+    def _way_to_fragments(self, way: overpy.Way) -> List[Fragment]:
+        nodes: List[overpy.Node] = way.nodes
+        coords: List[Tuple[Decimal, Decimal]] = [(Decimal(c.lat), Decimal(c.lon)) for c in nodes]
+        lane_width: float = float(way.tags.get("width", pr.min_width(way)))
+        extra_lateral_clearance: float = float(
+            way.tags.get("shoulder:width", pr.min_extra_lateral_clearance(way, self._have_shoulder(way))))
+        length: float = DefaultRoadProvider._coords_to_length(coords)
+        speed: float = self.get_current_speed(coords)
+        bendiness: float = DefaultRoadProvider._coords_to_bendiness(coords, length)
+
+        return [Fragment(width=lane_width + extra_lateral_clearance, extra_lateral_clearance=extra_lateral_clearance,
+                         speed=speed, length=length, coords=coords, bendiness=bendiness)]
+
+    def get_current_speed(self, coords: List[Tuple[Decimal, Decimal]]):
+        speed: float = self.tomtom.get_current_speed(coords[len(coords) // 2])
+
+        if speed is None:
+            for c in coords:
+                speed = self.tomtom.get_current_speed(c)
+                if speed is not None:
+                    break
+        return speed
 
     def provide(self, name: DefaultRoadId, radius: float, location: Tuple[float, float]) -> Road:
         lat, lon = location
@@ -164,5 +168,5 @@ class DefaultRoadProvider(RoadProvider):
         return [self._way_to_id(way) for way in ways]
 
 
-def _create_road_provider() -> RoadProvider:
-    return DefaultRoadProvider()
+def _create_road_provider(tomtom_key: str) -> RoadProvider:
+    return DefaultRoadProvider(tomtom_key)

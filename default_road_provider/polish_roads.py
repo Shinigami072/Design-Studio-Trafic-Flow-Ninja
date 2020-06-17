@@ -11,7 +11,8 @@ class PolishRoadClass(Enum):
     G = 4
     Z = 5
     L = 6
-    D = 7
+    LD = 7
+    D = 8
 
 
 _class_mapping: Dict[str, List[PolishRoadClass]] = {
@@ -25,12 +26,12 @@ _class_mapping: Dict[str, List[PolishRoadClass]] = {
     "secondary_link": [PolishRoadClass.G, PolishRoadClass.Z],
     "tertiary": [PolishRoadClass.G, PolishRoadClass.Z],
     "tertiary_link": [PolishRoadClass.G, PolishRoadClass.Z],
-    "unclassified": [PolishRoadClass.L, PolishRoadClass.D],
+    "unclassified": [PolishRoadClass.L, PolishRoadClass.LD],
     "unclassified_link": [PolishRoadClass.L, PolishRoadClass.D],
-    "residential": [PolishRoadClass.L],
-    "living_street": [PolishRoadClass.L],
-    "service": [PolishRoadClass.L],
-    "track": [PolishRoadClass.L]
+    "residential": [PolishRoadClass.L, PolishRoadClass.D],
+    "living_street": [PolishRoadClass.L, PolishRoadClass.D],
+    "service": [PolishRoadClass.L, PolishRoadClass.D],
+    "track": [PolishRoadClass.L, PolishRoadClass.D]
 }
 
 
@@ -46,7 +47,8 @@ _widths: Dict[PolishRoadClass, float] = {
     PolishRoadClass.G: 3.50,
     PolishRoadClass.Z: 3.00,
     PolishRoadClass.L: 2.75,
-    PolishRoadClass.D: 2.50,
+    PolishRoadClass.LD: 2.5,
+    PolishRoadClass.D: 2.25,
 }
 
 _extra_lateral_clearance: Dict[PolishRoadClass, float] = {
@@ -56,6 +58,7 @@ _extra_lateral_clearance: Dict[PolishRoadClass, float] = {
     PolishRoadClass.G: 1.25,
     PolishRoadClass.Z: 1.0,
     PolishRoadClass.L: 0.75,
+    PolishRoadClass.LD: 0.75,
     PolishRoadClass.D: 0.75,
 }
 

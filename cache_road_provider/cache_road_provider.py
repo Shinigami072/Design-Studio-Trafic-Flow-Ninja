@@ -1,3 +1,4 @@
+from decimal import Decimal
 from typing import Tuple, List
 
 from road import Road
@@ -26,8 +27,8 @@ class CacheRoadProvider(RoadProvider):
         def __repr__(self):
             return "[{id}] {name}".format(id=self.road_id, name=self.name)
 
-    def __init__(self):
-        self.provider = road_provider("default_road_provider")
+    def __init__(self, tomtom_key: str):
+        self.provider = road_provider("default_road_provider", tomtom_key)
 
     @staticmethod
     def _cache_road(name: CacheRoadId, road: Road, radius: float, location: Tuple[float, float]):
@@ -49,13 +50,22 @@ class CacheRoadProvider(RoadProvider):
                 print("Getting cache failed")
         return road
 
+    def get_current_speed(self, coords: List[Tuple[Decimal, Decimal]]):
+        speed: float = self.provider.get_current_speed(coords)
+
+        return speed
+
     def provide(self, name: CacheRoadId, radius: float, location: Tuple[float, float]) -> Road:
 
-        road = self._get_cached_road(name, radius, location)
+        road: Road = self._get_cached_road(name, radius, location)
 
         if road is None:
             road = self.provider.provide(name, radius, location)
             self._cache_road(name, road, radius, location)
+        else:
+            for fragment in road.fragments:
+                speed: float = self.get_current_speed(fragment.coords)
+                fragment.speed = speed
 
         return road
 
@@ -63,5 +73,5 @@ class CacheRoadProvider(RoadProvider):
         return self.provider.names(location)
 
 
-def _create_road_provider() -> RoadProvider:
-    return CacheRoadProvider()
+def _create_road_provider(tomtom_key: str) -> RoadProvider:
+    return CacheRoadProvider(tomtom_key)

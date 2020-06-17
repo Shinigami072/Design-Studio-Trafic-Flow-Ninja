@@ -7,7 +7,7 @@ from urllib.request import urlopen
 
 
 class TomTomClient:
-    def __init__(self, api_key: str = "4PUqim975O4HaVk292zznuwhgHboq7k4",
+    def __init__(self, api_key: str,
                  base_url: str = "api.tomtom.com"):
         self.api_key = api_key
         self.base_url = base_url
