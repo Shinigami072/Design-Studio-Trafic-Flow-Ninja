@@ -1,3 +1,4 @@
+from decimal import Decimal
 from typing import Tuple, List
 
 from road import Road
@@ -49,7 +50,7 @@ class CacheRoadProvider(RoadProvider):
                 print("Getting cache failed")
         return road
 
-    def get_current_speed(self, coords):
+    def get_current_speed(self, coords: List[Tuple[Decimal, Decimal]]):
         speed: float = self.provider.get_current_speed(coords)
 
         return speed

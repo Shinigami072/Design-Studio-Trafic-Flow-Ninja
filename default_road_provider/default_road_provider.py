@@ -54,19 +54,6 @@ class DefaultRoadProvider(RoadProvider):
     def _have_shoulder(way: overpy.Way) -> bool:
         return way.tags.get("shoulder", "no") != "no" or way.tags.get("shoulder:both", "no") != "no"
 
-    def _way_to_fragments(self, way: overpy.Way) -> List[Fragment]:
-        nodes: List[overpy.Node] = way.nodes
-        coords: List[Tuple[Decimal, Decimal]] = [(Decimal(c.lat), Decimal(c.lon)) for c in nodes]
-        lane_width: float = float(way.tags.get("width", pr.min_width(way)))
-        extra_lateral_clearance: float = float(
-            way.tags.get("shoulder:width", pr.min_extra_lateral_clearance(way, self._have_shoulder(way))))
-        length: float = DefaultRoadProvider._coords_to_length(coords)
-        speed: float = self.get_current_speed(coords)
-        bendiness: float = DefaultRoadProvider._coords_to_bendiness(coords, length)
-
-        return [Fragment(width=lane_width + extra_lateral_clearance, extra_lateral_clearance=extra_lateral_clearance,
-                         speed=speed, length=length, coords=coords, bendiness=bendiness)]
-
     @staticmethod
     def _way_to_center_coords(way: overpy.Way) -> Tuple[Decimal, Decimal]:
         center_lat = way.center_lat
@@ -101,7 +88,20 @@ class DefaultRoadProvider(RoadProvider):
                         local_intersections += 1
                 return len(ways) - local_intersections
 
-    def get_current_speed(self, coords):
+    def _way_to_fragments(self, way: overpy.Way) -> List[Fragment]:
+        nodes: List[overpy.Node] = way.nodes
+        coords: List[Tuple[Decimal, Decimal]] = [(Decimal(c.lat), Decimal(c.lon)) for c in nodes]
+        lane_width: float = float(way.tags.get("width", pr.min_width(way)))
+        extra_lateral_clearance: float = float(
+            way.tags.get("shoulder:width", pr.min_extra_lateral_clearance(way, self._have_shoulder(way))))
+        length: float = DefaultRoadProvider._coords_to_length(coords)
+        speed: float = self.get_current_speed(coords)
+        bendiness: float = DefaultRoadProvider._coords_to_bendiness(coords, length)
+
+        return [Fragment(width=lane_width + extra_lateral_clearance, extra_lateral_clearance=extra_lateral_clearance,
+                         speed=speed, length=length, coords=coords, bendiness=bendiness)]
+
+    def get_current_speed(self, coords: List[Tuple[Decimal, Decimal]]):
         speed: float = self.tomtom.get_current_speed(coords[len(coords) // 2])
 
         if speed is None:

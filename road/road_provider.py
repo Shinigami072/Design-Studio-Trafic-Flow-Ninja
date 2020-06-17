@@ -1,3 +1,5 @@
+from decimal import Decimal
+
 from abc import ABC
 from typing import Tuple, List
 
@@ -8,7 +10,7 @@ class RoadProvider(ABC):
     class RoadId(ABC):
         pass
 
-    def get_current_speed(self, coords: List[Tuple[float, float]]) -> float:
+    def get_current_speed(self, coords: List[Tuple[Decimal, Decimal]]) -> float:
         raise NotImplementedError
 
     def provide(self, name: RoadId, radius: float, location: Tuple[float, float]) -> road.Road:
