@@ -30,20 +30,20 @@ class CacheRoadProvider(RoadProvider):
         self.provider = road_provider("default_road_provider")
 
     @staticmethod
-    def _cache_road(road: Road, radius: float, location: Tuple[float, float]):
+    def _cache_road(name: CacheRoadId, road: Road, radius: float, location: Tuple[float, float]):
         try:
-            os.makedirs("../cache/" + str(radius))
-            with open("../cache/" + str(radius) + "/" + str(location) + ".pickle", "wb") as pickle_out:
+            os.makedirs("cache/" + str(radius) + str(name.road_id))
+            with open("cache/" + str(radius) + str(name.road_id) + "/" + str(location) + ".pickle", "wb") as pickle_out:
                 pickle.dump(road, pickle_out)
         except IOError:
             print("Cache failed")
 
     @staticmethod
-    def _get_cached_road(radius: float, location: Tuple[float, float]):
+    def _get_cached_road(name: CacheRoadId, radius: float, location: Tuple[float, float]):
         road = None
-        if os.path.exists("../cache/" + str(radius) + "/" + str(location) + ".pickle"):
+        if os.path.exists("cache/" + str(radius) + str(name.road_id) + "/" + str(location) + ".pickle"):
             try:
-                with open("../cache/" + str(radius) + "/" + str(location) + ".pickle", "rb") as pickle_in:
+                with open("cache/" + str(radius) + str(name.road_id) + "/" + str(location) + ".pickle", "rb") as pickle_in:
                     road = pickle.load(pickle_in)
             except IOError:
                 print("Getting cache failed")
@@ -51,11 +51,11 @@ class CacheRoadProvider(RoadProvider):
 
     def provide(self, name: CacheRoadId, radius: float, location: Tuple[float, float]) -> Road:
 
-        road = self._get_cached_road(radius, location)
+        road = self._get_cached_road(name, radius, location)
 
         if road is None:
             road = self.provider.provide(name, radius, location)
-            self._cache_road(road, radius, location)
+            self._cache_road(name, road, radius, location)
 
         return road
 

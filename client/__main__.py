@@ -8,7 +8,7 @@ import sys
 
 
 def main(pos: Tuple[float, float],
-         lookup_range: float = 1000,
+         lookup_range: float,
          list_roads: bool = False,
          road: int = 0,
          road_provider_name: str = "default_road_provider",
@@ -37,7 +37,7 @@ if __name__ == "__main__":
     parser = argparse.ArgumentParser("Traffic Flow Ninja")
     parser.add_argument("latitude")
     parser.add_argument("longitude")
-    parser.add_argument("--length", default=1000,
+    parser.add_argument("--length", default=2000,
                         help="length of road taken into account (real road length will be slightly bigger)")
     parser.add_argument("--list-roads", action='store_true', help="(toggle) List all roads at a certain position")
     parser.add_argument("--road", default=0, help="which road to chose (only has effect if there are multiple roads)")
@@ -48,7 +48,6 @@ if __name__ == "__main__":
     options = parser.parse_args()
 
     pos = (float(options.latitude), float(options.longitude))
-    # pos = (49.66006, 19.26671)  # FOr Testing purposes
     lookup_range = int(options.length)
     list_roads = options.list_roads is not None
     road = int(options.road)
