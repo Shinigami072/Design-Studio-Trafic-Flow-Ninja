@@ -13,6 +13,7 @@ def main(pos: Tuple[float, float],
     controller = Controller(
         provider=road_provider(road_provider_name)
     )
+    print("Road Query...")
     roads = controller.query_roads(pos)
 
     if list_roads:
@@ -38,7 +39,7 @@ if __name__ == "__main__":
                         help="alternate module providing road geometry")
     options = parser.parse_args()
 
-    pos = (float(options.latitude),float(options.longitude))
+    pos = (float(options.latitude), float(options.longitude))
     # pos = (49.66006, 19.26671)  # FOr Testing purposes
     list_roads = options.list_roads is not None
     road = int(options.road)
