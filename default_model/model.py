@@ -54,8 +54,6 @@ class Model(model.Model):
         bendiness = Model._road_to_bendiness(road)
 
         density_of_intersections = Model._road_to_intersection_density(road)
-        print("density", density_of_intersections)
-        print("road:", road, road.length())
         extra_lateral_clearance = Model._road_to_extra_lateral_clearance(road)
 
         return self._get_average_daily_traffic(

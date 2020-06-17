@@ -8,6 +8,7 @@ import sys
 import json
 
 
+
 def main(pos: Tuple[float, float],
          tomtom_key: str,
          lookup_range: float,
@@ -31,8 +32,19 @@ def main(pos: Tuple[float, float],
         for i in range(len(roads)):
             print("road num:", i + 1, " - name:", roads[i])
 
-        result = json.loads(controller.get_result(roads[max(0, min(road, len(roads) - 1))], lookup_range / 2, pos))
+        result: dict = json.loads(controller.get_result(roads[max(0, min(road, len(roads) - 1))], lookup_range / 2, pos))
 
+        road: dict = result.get("road")
+        print("road:", road.get("name"))
+        print("speed:", sum([fragment.get("speed") for fragment in road.get("fragments")])/len(road.get("fragments")))
+        print("extra lateral clearance:", sum([fragment.get("extra_lateral_clearance") for fragment in
+                                              road.get("fragments")])
+              / len(road.get("fragments")))
+        print("bendiness:", sum([fragment.get("bendiness") for fragment in road.get("fragments")])
+              / len(road.get("fragments")))
+        print("width:", sum([fragment.get("width") for fragment in road.get("fragments")]) / len(road.get("fragments")))
+        print("length:", sum([fragment.get("length") for fragment in road.get("fragments")]))
+        print("intersections:", road.get("intersections"))
         print("cars per day: ", result.get("average_daily_traffic"))
 
 
