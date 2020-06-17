@@ -15,6 +15,6 @@ class RoadProvider(ABC):
         raise NotImplementedError
 
 
-def road_provider(module: str) -> RoadProvider:
+def road_provider(module: str, tomtom_key: str) -> RoadProvider:
     mod = __import__(module)
-    return mod._create_road_provider()
+    return mod._create_road_provider(tomtom_key)

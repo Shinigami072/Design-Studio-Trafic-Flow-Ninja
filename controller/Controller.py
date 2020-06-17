@@ -1,13 +1,13 @@
 from typing import Tuple, List
 
 from default_model.model import Model, model
-from road.road_provider import road_provider, RoadProvider
+from road.road_provider import RoadProvider
 
 
 class Controller:
 
     def __init__(self,
-                 provider: RoadProvider = road_provider("cache_road_provider"),
+                 provider: RoadProvider,
                  c_model: Model = model.model("default_model")):
         self.provider = provider
         self.model = c_model

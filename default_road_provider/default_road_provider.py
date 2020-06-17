@@ -34,9 +34,9 @@ class DefaultRoadProvider(RoadProvider):
         return DefaultRoadProvider.DefaultRoadId(way.id, way.tags.get("unsigned_ref", ""),
                                                  str(way.tags.get("name", "")))
 
-    def __init__(self):
+    def __init__(self, tomtom_key: str):
         self.api = overpy.Overpass()
-        self.tomtom = TomTomClient()
+        self.tomtom = TomTomClient(tomtom_key)
 
     @staticmethod
     def _coords_to_length(coords: List[Tuple[Decimal, Decimal]]) -> float:
@@ -164,5 +164,5 @@ class DefaultRoadProvider(RoadProvider):
         return [self._way_to_id(way) for way in ways]
 
 
-def _create_road_provider() -> RoadProvider:
-    return DefaultRoadProvider()
+def _create_road_provider(tomtom_key: str) -> RoadProvider:
+    return DefaultRoadProvider(tomtom_key)

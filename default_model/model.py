@@ -47,14 +47,13 @@ class Model(model.Model):
     def _road_to_intersection_density(road: Road):
         return road.intersections / (road.length() / 1000)
 
-    # TODO this is an api change to aid with refactor- this should probably be executed with mor forethought
     def get_average_daily_traffic(self, road: Road, percentile_speed=0.5):
         duration_hours = 24
         speed = Model._road_to_speed(road)
         width = Model._road_to_width(road)
         bendiness = Model._road_to_bendiness(road)
 
-        density_of_intersections = Model._road_to_intersection_density(road)  # and this is..too powerfull?
+        density_of_intersections = Model._road_to_intersection_density(road)
         print("density", density_of_intersections)
         print("road:", road, road.length())
         extra_lateral_clearance = Model._road_to_extra_lateral_clearance(road)
