@@ -21,7 +21,6 @@ class Controller:
     def get_result(self, name: RoadProvider.RoadId, radius: float, coordinates: Tuple[float, float]):
         road = self.provider.provide(name, radius, coordinates)
 
-        # average_traffic = self.model.get_average_daily_traffic(road)
-        hourly_traffic = self.model.get_traffic_for_time_period(road)
+        hourly_traffic = self.model.get_average_daily_traffic(road)
 
         return hourly_traffic
