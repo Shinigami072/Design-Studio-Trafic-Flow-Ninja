@@ -7,7 +7,7 @@ from road.road_provider import road_provider, RoadProvider
 class Controller:
 
     def __init__(self,
-                 provider: RoadProvider = road_provider("default_road_provider"),
+                 provider: RoadProvider = road_provider("cache_road_provider"),
                  c_model: Model = model.model("default_model")):
         self.provider = provider
         self.model = c_model
