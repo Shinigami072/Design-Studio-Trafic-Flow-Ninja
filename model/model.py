@@ -1,3 +1,4 @@
+import math
 from abc import ABC
 
 from road import Road
@@ -9,8 +10,10 @@ class Model(ABC):
 
 def model(module: str) -> Model:
     mod = __import__(module)
+    return mod._create_model()
 
-class Model:
+
+class ModelImpl:
     # as in wiki.models Table 2
     CONSTANT_COEFF = 4.846
     SEGMENT_CHARACTERISTIC_COEFF = 4.462
@@ -53,27 +56,8 @@ class Model:
     def _road_to_intersection_density(road: Road):
         return road.intersections / (road.length() / 1000)
 
-    # TODO this is an api change to aid with refactor- this should probably be executed with mor fore thought
-    def get_traffic_per_day(self, road: Road, percentile_speed=0.5):
-        duration_hours = 24
-        speed = Model._road_to_speed(road)
-        width = Model._road_to_width(road)
-        bendiness = Model._road_to_bendiness(road)
+        # as default uses average speed (percentile = 0.5)
 
-
-    return mod._create_model()
-        return self._get_traffic_for_time_period(
-            speed=speed,
-            sd_paved_width=self.SD_PAVED_WIDTH,
-            paved_width=width,
-            extra_lateral_clearance=extra_lateral_clearance,
-            bendiness=bendiness,
-            density_of_intersections=density_of_intersections,
-            duration_hours=duration_hours,
-            percentile_speed=percentile_speed
-        )
-
-    # as default uses average speed (percentile = 0.5)
     def _get_traffic_for_time_period(self, speed: float, sd_paved_width: float, paved_width: float,
                                      extra_lateral_clearance: float, bendiness: float,
                                      density_of_intersections: float,
@@ -88,9 +72,30 @@ class Model:
                                                           segment_characteristic) + self.SD_PAVED_WIDTH_COEFF *
                                                       math.log(sd_paved_width) + (1 / self.THETA) * math.log(
                     percentile_speed)))
-                                  / self.AVERAGE_DAILY_TRAFFIC_COEFF)) * (duration_hours/24)
+                                  / self.AVERAGE_DAILY_TRAFFIC_COEFF)) * (duration_hours / 24)
 
         return daily_traffic
+    # TODO this is an api change to aid with refactor- this should probably be executed with mor fore thought
+    def get_traffic_per_day(self, road: Road, percentile_speed=0.5):
+        duration_hours = 24
+        speed = Model._road_to_speed(road)
+        width = Model._road_to_width(road)
+        bendiness = Model._road_to_bendiness(road)
+        extra_lateral_clearance = self._road_to_extra_lateral_clearance(road)
+        density_of_intersections = self._road_to_intersection_density(road)
+
+        return self._get_traffic_for_time_period(
+            speed=speed,
+            sd_paved_width=self.SD_PAVED_WIDTH,
+            paved_width=width,
+            extra_lateral_clearance=extra_lateral_clearance,
+            bendiness=bendiness,
+            density_of_intersections=density_of_intersections,
+            duration_hours=duration_hours,
+            percentile_speed=percentile_speed
+        )
+
+
 
 
 def model_provider(module: str) -> Model:
