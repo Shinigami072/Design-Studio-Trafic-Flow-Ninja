@@ -60,14 +60,8 @@ class DefaultRoadProvider(RoadProvider):
         lane_width: float = float(way.tags.get("width", pr.min_width(way)))
         extra_lateral_clearance: float = float(
             way.tags.get("shoulder:width", pr.min_extra_lateral_clearance(way, self._have_shoulder(way))))
-        speed: float = self.tomtom.get_current_speed(coords[len(coords) // 2])
         length: float = DefaultRoadProvider._coords_to_length(coords)
-
-        if speed is None:
-            for c in coords:
-                speed: float = self.tomtom.get_current_speed(c)
-                if speed is not None:
-                    break
+        speed: float = self.get_current_speed(coords)
         bendiness: float = DefaultRoadProvider._coords_to_bendiness(coords, length)
 
         return [Fragment(width=lane_width + extra_lateral_clearance, extra_lateral_clearance=extra_lateral_clearance,
@@ -106,6 +100,16 @@ class DefaultRoadProvider(RoadProvider):
                             or (selected_way.tags.get("name") == way.tags.get("name")):
                         local_intersections += 1
                 return len(ways) - local_intersections
+
+    def get_current_speed(self, coords):
+        speed: float = self.tomtom.get_current_speed(coords[len(coords) // 2])
+
+        if speed is None:
+            for c in coords:
+                speed = self.tomtom.get_current_speed(c)
+                if speed is not None:
+                    break
+        return speed
 
     def provide(self, name: DefaultRoadId, radius: float, location: Tuple[float, float]) -> Road:
         lat, lon = location

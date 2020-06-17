@@ -8,6 +8,9 @@ class RoadProvider(ABC):
     class RoadId(ABC):
         pass
 
+    def get_current_speed(self, coords: List[Tuple[float, float]]) -> float:
+        raise NotImplementedError
+
     def provide(self, name: RoadId, radius: float, location: Tuple[float, float]) -> road.Road:
         raise NotImplementedError
 
