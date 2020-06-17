@@ -8,12 +8,13 @@ class Model(ABC):
     def get_traffic_per_day(self, road: Road, percentile_speed=0.5) -> float:
         pass
 
+
 def model(module: str) -> Model:
     mod = __import__(module)
     return mod._create_model()
 
 
-class ModelImpl:
+class ModelImpl(Model):
     # as in wiki.models Table 2
     CONSTANT_COEFF = 4.846
     SEGMENT_CHARACTERISTIC_COEFF = 4.462
@@ -56,7 +57,6 @@ class ModelImpl:
     def _road_to_intersection_density(road: Road):
         return road.intersections / (road.length() / 1000)
 
-        # as default uses average speed (percentile = 0.5)
 
     def _get_traffic_for_time_period(self, speed: float, sd_paved_width: float, paved_width: float,
                                      extra_lateral_clearance: float, bendiness: float,
@@ -75,12 +75,13 @@ class ModelImpl:
                                   / self.AVERAGE_DAILY_TRAFFIC_COEFF)) * (duration_hours / 24)
 
         return daily_traffic
+
     # TODO this is an api change to aid with refactor- this should probably be executed with mor fore thought
     def get_traffic_per_day(self, road: Road, percentile_speed=0.5):
         duration_hours = 24
-        speed = Model._road_to_speed(road)
-        width = Model._road_to_width(road)
-        bendiness = Model._road_to_bendiness(road)
+        speed = self._road_to_speed(road)
+        width = self._road_to_width(road)
+        bendiness = self._road_to_bendiness(road)
         extra_lateral_clearance = self._road_to_extra_lateral_clearance(road)
         density_of_intersections = self._road_to_intersection_density(road)
 
@@ -96,7 +97,5 @@ class ModelImpl:
         )
 
 
-
-
-def model_provider(module: str) -> Model:
-    return Model()
+def _create_model() -> Model:
+    return ModelImpl()
