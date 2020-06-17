@@ -95,7 +95,9 @@ class DefaultRoadProvider(RoadProvider):
                 local_intersections += 1
         return len(ways) - local_intersections
 
-    def provide(self, name: DefaultRoadId) -> Road:
+    def provide(self, name: DefaultRoadId, radius: float, location: Tuple[float, float]) -> Road:
+        lat, lon = location
+
         result = self.api.query(
             """
                 
@@ -103,12 +105,12 @@ class DefaultRoadProvider(RoadProvider):
                 node(w);
                 complete {{
                 (
-                    way(bn)[name="{name}"][unsigned_ref="{ref}"][highway~"^(motorway|motorway_link|trunk|trunk_link|primary|primary_link|secondary|tertiary|unclassified|residential|living_street|service|track)$"];
+                    way(bn)[name="{name}"][unsigned_ref="{ref}"][highway~"^(motorway|motorway_link|trunk|trunk_link|primary|primary_link|secondary|tertiary|unclassified|residential|living_street|service|track)$"](around:{radius},{lat},{lon});
                     node(w);  	
                 );
                 
                 out meta;
-            """.format(id=name.road_id, ref=name.ref, name=name.name)
+            """.format(id=name.road_id, ref=name.ref, name=name.name, radius=radius, lat=lat, lon=lon)
         )
 
         ways = sorted(result.ways, key=self._way_to_center_coords)
@@ -126,7 +128,7 @@ class DefaultRoadProvider(RoadProvider):
                 node(w);
                 complete {{
                 (
-                    way(bn)[name="{name}"][unsigned_ref="{ref}"][highway~"^(motorway|motorway_link|trunk|trunk_link|primary|primary_link|secondary|tertiary|unclassified|residential|living_street|service|track)$"];
+                    way(bn)[name="{name}"][unsigned_ref="{ref}"][highway~"^(motorway|motorway_link|trunk|trunk_link|primary|primary_link|secondary|tertiary|unclassified|residential|living_street|service|track)$"](around:{radius},{lat},{lon});
                     node(w);  	
                 ) -> .searched_way;
 
@@ -135,7 +137,7 @@ class DefaultRoadProvider(RoadProvider):
                 way(around.searched_way:0)[name!="{name}"][highway~"^(motorway|motorway_link|trunk|trunk_link|primary|primary_link|secondary|tertiary|unclassified|residential|living_street|service|track)$"];
                 
                 out meta;
-            """.format(id=name.road_id, ref=name.ref, name=name.name)
+            """.format(id=name.road_id, ref=name.ref, name=name.name, radius=radius, lat=lat, lon=lon)
         )
         intersections = self._ways_to_number_of_intersections(result.ways)
         return Road(name.name, road_fragments, intersections)

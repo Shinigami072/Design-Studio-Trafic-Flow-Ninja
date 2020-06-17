@@ -8,7 +8,7 @@ class RoadProvider(ABC):
     class RoadId(ABC):
         pass
 
-    def provide(self, name: RoadId) -> road.Road:
+    def provide(self, name: RoadId, radius: float, location: Tuple[float, float]) -> road.Road:
         raise NotImplementedError
 
     def names(self, location: Tuple[float, float]) -> List[RoadId]:
