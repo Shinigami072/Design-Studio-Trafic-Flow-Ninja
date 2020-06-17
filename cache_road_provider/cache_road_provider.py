@@ -32,18 +32,19 @@ class CacheRoadProvider(RoadProvider):
     @staticmethod
     def _cache_road(road: Road, radius: float, location: Tuple[float, float]):
         try:
-            os.makedirs("cache/" + str(radius))
-            with open("cache/" + str(radius) + "/" + str(location) + ".pickle", "wb") as pickle_out:
+            os.makedirs("../cache/" + str(radius))
+            with open("../cache/" + str(radius) + "/" + str(location) + ".pickle", "wb") as pickle_out:
                 pickle.dump(road, pickle_out)
         except IOError:
             print("Cache failed")
 
     @staticmethod
     def _get_cached_road(radius: float, location: Tuple[float, float]):
-        if os.path.exists("cache/" + str(radius) + "/" + str(location) + ".pickle"):
+        road = None
+        if os.path.exists("../cache/" + str(radius) + "/" + str(location) + ".pickle"):
             try:
-                with open("cache/" + str(radius) + "/" + str(location) + ".pickle", "rb") as pickle_in:
-                    road = pickle.load(pickle_in)[0]
+                with open("../cache/" + str(radius) + "/" + str(location) + ".pickle", "rb") as pickle_in:
+                    road = pickle.load(pickle_in)
             except IOError:
                 print("Getting cache failed")
         return road
