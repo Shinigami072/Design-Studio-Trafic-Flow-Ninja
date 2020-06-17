@@ -1,6 +1,6 @@
 from typing import Tuple, List
 
-from model.model import Model, model_provider
+from default_model.model import Model, model
 from road.road_provider import road_provider, RoadProvider
 
 
@@ -8,9 +8,9 @@ class Controller:
 
     def __init__(self,
                  provider: RoadProvider = road_provider("default_road_provider"),
-                 model: Model = model_provider("default")):
+                 c_model: Model = model.model("default_model")):
         self.provider = provider
-        self.model = model
+        self.model = c_model
 
         # tomtom data
         # other user data (optional)
@@ -21,7 +21,7 @@ class Controller:
     def get_result(self, name: RoadProvider.RoadId):
         road = self.provider.provide(name)
 
-        #average_traffic = self.model.get_average_daily_traffic(road)
+        # average_traffic = self.model.get_average_daily_traffic(road)
         hourly_traffic = self.model.get_traffic_for_time_period(road)
 
         return hourly_traffic
