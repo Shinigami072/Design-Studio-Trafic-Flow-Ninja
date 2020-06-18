@@ -33,7 +33,8 @@ class CacheRoadProvider(RoadProvider):
     @staticmethod
     def _cache_road(name: CacheRoadId, road: Road, radius: float, location: Tuple[float, float]):
         try:
-            os.makedirs("cache/" + str(radius) + str(name.road_id))
+            if not os.path.exists("cache/" + str(radius) + str(name.road_id)):
+                os.makedirs("cache/" + str(radius) + str(name.road_id))
             with open("cache/" + str(radius) + str(name.road_id) + "/" + str(location) + ".pickle", "wb") as pickle_out:
                 pickle.dump(road, pickle_out)
         except IOError:

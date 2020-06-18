@@ -7,6 +7,7 @@ import argparse
 import sys
 import json
 import time
+import os
 from overpy.exception import OverpassGatewayTimeout, OverpassTooManyRequests
 from timeout.timeout import TimeoutException
 
@@ -17,6 +18,7 @@ def main(pos: Tuple[float, float],
          timeout: int,
          list_roads: bool,
          road: int,
+         file_json:str,
          road_provider_name: str = "default_road_provider",
          model_name: str = "default_model"):
     controller = Controller(
@@ -39,6 +41,10 @@ def main(pos: Tuple[float, float],
             continue
         break
 
+    if road is None:
+        print("No roads found.")
+        exit()
+
     if list_roads:
         for i in range(len(roads)):
             print("road num:", i + 1, " - name:", roads[i])
@@ -51,20 +57,26 @@ def main(pos: Tuple[float, float],
         for i in range(3):
             try:
                 print("Result Query...")
-                result: dict = json.loads(controller.get_result(roads[max(0, min(road, len(roads) - 1))],
-                                                                lookup_range / 2, pos, timeout))
+                result_str: str = controller.get_result(roads[max(0, min(road, len(roads) - 1))],
+                                                                lookup_range / 2, pos, timeout)
+                if file_json != "":
+                    if not os.path.exists("json"):
+                        os.makedirs("json")
+                    with open("json/" + file_json, "w") as json_out:
+                        json_out.write(result_str)
 
+                result: dict = json.loads(result_str)
                 road: dict = result.get("road")
                 print("road:", road.get("name"))
                 print("speed:", sum([fragment.get("speed") for fragment in road.get("fragments")])
-                      / len(road.get("fragments")))
+                    / len(road.get("fragments")))
                 print("extra lateral clearance:", sum([fragment.get("extra_lateral_clearance") for fragment in
-                                              road.get("fragments")])
+                                            road.get("fragments")])
                     / len(road.get("fragments")))
                 print("bendiness:", sum([fragment.get("bendiness") for fragment in road.get("fragments")])
                     / len(road.get("fragments")))
                 print("width:", sum([fragment.get("width") for fragment in road.get("fragments")])
-                      / len(road.get("fragments")))
+                    / len(road.get("fragments")))
                 print("length:", sum([fragment.get("length") for fragment in road.get("fragments")]))
                 print("intersections:", road.get("intersections"))
                 print("cars per day: ", result.get("average_daily_traffic"))
@@ -87,7 +99,7 @@ if __name__ == "__main__":
     parser = argparse.ArgumentParser("Traffic Flow Ninja")
     parser.add_argument("latitude")
     parser.add_argument("longitude")
-    parser.add_argument("--tomtom-key", default="4PUqim975O4HaVk292zznuwhgHboq7k4",
+    parser.add_argument("--tomtom-key", default="EoqyQdOk9WolGiI6qmXDzWfPz3fG3G4X",
                         help="provide tomtom api key")
     parser.add_argument("--length", default=2000,
                         help="length of road taken into account (real road length will be slightly bigger)")
@@ -95,6 +107,8 @@ if __name__ == "__main__":
     parser.add_argument("--list-roads", action='store_true', help="(toggle) List all roads at a certain position")
     parser.add_argument("--timeout", default=120,
                         help="timeout for road provider")
+    parser.add_argument("--json", default="",
+                        help="specify filename you want to dump results to in json format")
     parser.add_argument("--road-provider", default="cache_road_provider",
                         help="alternate module providing road geometry")
     parser.add_argument("--model", default="default_model",
@@ -106,7 +120,8 @@ if __name__ == "__main__":
     lookup_range = int(options.length)
     list_roads = options.list_roads
     timeout = int(options.timeout)
+    file_json = options.json
     road = int(options.road) - 1
 
     main(pos=pos, tomtom_key=tomtom_key, timeout=timeout, lookup_range=lookup_range, list_roads=list_roads, road=road,
-         road_provider_name=options.road_provider, model_name=options.model)
+         file_json=file_json, road_provider_name=options.road_provider, model_name=options.model)
