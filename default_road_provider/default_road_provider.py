@@ -29,14 +29,14 @@ class DefaultRoadProvider(RoadProvider):
         def __repr__(self):
             return "[{id}] {name}".format(id=self.road_id, name=self.name)
 
+    def __init__(self, tomtom_key: str):
+        self.api = overpy.Overpass()
+        self.tomtom = TomTomClient(tomtom_key)
+
     @staticmethod
     def _way_to_id(way: overpy.Way) -> DefaultRoadId:
         return DefaultRoadProvider.DefaultRoadId(way.id, way.tags.get("unsigned_ref", ""),
                                                  str(way.tags.get("name", "")))
-
-    def __init__(self, tomtom_key: str):
-        self.api = overpy.Overpass()
-        self.tomtom = TomTomClient(tomtom_key)
 
     @staticmethod
     def _coords_to_length(coords: List[Tuple[Decimal, Decimal]]) -> float:
@@ -71,22 +71,20 @@ class DefaultRoadProvider(RoadProvider):
     @staticmethod
     def _ways_to_number_of_intersections(selected_way: overpy.Way, ways: List[overpy.Way]):
         local_intersections = 0
-        for way in ways:
-            if selected_way.tags.get("highway") in ["motorway", "motorway_link", "trunk", "trunk_link"]:
-                for way in ways:
-                    if not way.tags.get("highway") in ["motorway", "motorway_link", "trunk", "trunk_link"] \
-                            or (
-                            selected_way.tags.get("ref") == way.tags.get("ref") and way.tags.get("ref") is not None):
-                        local_intersections += 1
-                return math.ceil((len(ways) - local_intersections) / 2)
-            else:
-                for way in ways:
-                    if way.tags.get("surface") != "asphalt" \
-                            and (way.tags.get("highway") in ["living_street", "service", "track"]) \
-                            or (selected_way.tags.get("ref") == way.tags.get("ref") and way.tags.get("ref") is not None) \
-                            or (selected_way.tags.get("name") == way.tags.get("name")):
-                        local_intersections += 1
-                return len(ways) - local_intersections
+        if selected_way.tags.get("highway") in ["motorway", "motorway_link", "trunk", "trunk_link"]:
+            for way in ways:
+                if not way.tags.get("highway") in ["motorway", "motorway_link", "trunk", "trunk_link"] \
+                        or (selected_way.tags.get("ref") == way.tags.get("ref") and way.tags.get("ref") is not None):
+                    local_intersections += 1
+            return math.ceil((len(ways) - local_intersections) / 2)
+        else:
+            for way in ways:
+                if way.tags.get("surface") != "asphalt" \
+                        and (way.tags.get("highway") in ["living_street", "service", "track"]) \
+                        or (selected_way.tags.get("ref") == way.tags.get("ref") and way.tags.get("ref") is not None) \
+                        or (selected_way.tags.get("name") == way.tags.get("name")):
+                    local_intersections += 1
+            return len(ways) - local_intersections
 
     def _way_to_fragments(self, way: overpy.Way) -> List[Fragment]:
         nodes: List[overpy.Node] = way.nodes
