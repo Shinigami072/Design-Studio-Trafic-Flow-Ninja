@@ -1,6 +1,6 @@
 from typing import Tuple
 
-from controller.Controller import Controller
+from controller.controller import Controller
 from model import model
 from road.road_provider import road_provider
 import argparse
