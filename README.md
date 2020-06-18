@@ -19,10 +19,16 @@ Usage:
 
 Options:
 
-`--road ROAD` - specify number of road you want to perform calculations for
+`--tomtom-key` - provide tomtom api key
 
 `--length` - length of road taken into account (real road length will be slightly bigger)
 
+`--road ROAD` - specify number of road you want to perform calculations for
+
 `--list-roads` - this will only list you roads without calculating traffic.
 
+`--timeout` - timeout for road provider
+
 `--road-provider ROAD_PROVIDER` - if you wish to implement your own road provider, then you can run our app with it, by using this option.
+
+`--model MODEL` - if you wish to implement your own model, then you can run our app with it, by using this option.
