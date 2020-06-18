@@ -8,13 +8,15 @@ import sys
 import json
 import time
 from overpy.exception import OverpassGatewayTimeout, OverpassTooManyRequests
+from timeout.timeout import TimeoutException
 
 
 def main(pos: Tuple[float, float],
          tomtom_key: str,
          lookup_range: float,
-         list_roads: bool = False,
-         road: int = 0,
+         timeout: int,
+         list_roads: bool,
+         road: int,
          road_provider_name: str = "default_road_provider",
          model_name: str = "default_model"):
     controller = Controller(
@@ -49,7 +51,8 @@ def main(pos: Tuple[float, float],
         for i in range(3):
             try:
                 print("Result Query...")
-                result: dict = json.loads(controller.get_result(roads[max(0, min(road, len(roads) - 1))], lookup_range / 2, pos))
+                result: dict = json.loads(controller.get_result(roads[max(0, min(road, len(roads) - 1))],
+                                                                lookup_range / 2, pos, timeout))
 
                 road: dict = result.get("road")
                 print("road:", road.get("name"))
@@ -75,6 +78,8 @@ def main(pos: Tuple[float, float],
                 print("Sleeping for 60s")
                 time.sleep(60)
                 continue
+            except TimeoutException:
+                sys.stderr.write("ERROR: Road provider timeout. Consider increasing timeout or reducing road length\n")
             break
 
 
@@ -92,13 +97,16 @@ if __name__ == "__main__":
                         help="alternate module providing road geometry")
     parser.add_argument("--model", default="default_model",
                         help="alternate module processing road geometry")
+    parser.add_argument("--timeout", default=120,
+                        help="timeout for road provider")
     options = parser.parse_args()
 
     pos = (float(options.latitude), float(options.longitude))
     tomtom_key = options.tomtom_key
     lookup_range = int(options.length)
     list_roads = options.list_roads
+    timeout = int(options.timeout)
     road = int(options.road)
 
-    main(pos=pos, tomtom_key=tomtom_key, lookup_range=lookup_range, list_roads=list_roads, road=road,
+    main(pos=pos, tomtom_key=tomtom_key, timeout=timeout, lookup_range=lookup_range, list_roads=list_roads, road=road,
          road_provider_name=options.road_provider, model_name=options.model)

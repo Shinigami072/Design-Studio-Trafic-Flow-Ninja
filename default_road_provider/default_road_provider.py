@@ -150,6 +150,7 @@ class DefaultRoadProvider(RoadProvider):
                 out meta;
             """.format(id=name.road_id, ref=name.ref, name=name.name, radius=radius, lat=lat, lon=lon)
         )
+
         intersections = self._ways_to_number_of_intersections(ways[0], result.ways)
         return Road(name.name, road_fragments, intersections)
 
