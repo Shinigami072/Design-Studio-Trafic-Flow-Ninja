@@ -6,7 +6,8 @@ from road.road_provider import road_provider
 import argparse
 import sys
 import json
-
+import time
+from overpy.exception import OverpassGatewayTimeout, OverpassTooManyRequests
 
 
 def main(pos: Tuple[float, float],
@@ -20,8 +21,21 @@ def main(pos: Tuple[float, float],
         provider=road_provider(road_provider_name, tomtom_key),
         c_model=model.model(model_name)
     )
-    print("Road Query...")
-    roads = controller.query_roads(pos)
+    for i in range(3):
+        try:
+            print("Road Query...")
+            roads = controller.query_roads(pos)
+        except OverpassGatewayTimeout:
+            sys.stderr.write("WARNING: Couldn't list roads. Server load too high\n")
+            print("Sleeping for 60s")
+            time.sleep(60)
+            continue
+        except OverpassTooManyRequests:
+            sys.stderr.write("WARNING: Couldn't list roads. Too many requests\n")
+            print("Sleeping for 60s")
+            time.sleep(60)
+            continue
+        break
 
     if list_roads:
         for i in range(len(roads)):
@@ -32,20 +46,36 @@ def main(pos: Tuple[float, float],
         for i in range(len(roads)):
             print("road num:", i + 1, " - name:", roads[i])
 
-        result: dict = json.loads(controller.get_result(roads[max(0, min(road, len(roads) - 1))], lookup_range / 2, pos))
+        for i in range(3):
+            try:
+                print("Result Query...")
+                result: dict = json.loads(controller.get_result(roads[max(0, min(road, len(roads) - 1))], lookup_range / 2, pos))
 
-        road: dict = result.get("road")
-        print("road:", road.get("name"))
-        print("speed:", sum([fragment.get("speed") for fragment in road.get("fragments")])/len(road.get("fragments")))
-        print("extra lateral clearance:", sum([fragment.get("extra_lateral_clearance") for fragment in
+                road: dict = result.get("road")
+                print("road:", road.get("name"))
+                print("speed:", sum([fragment.get("speed") for fragment in road.get("fragments")])
+                      / len(road.get("fragments")))
+                print("extra lateral clearance:", sum([fragment.get("extra_lateral_clearance") for fragment in
                                               road.get("fragments")])
-              / len(road.get("fragments")))
-        print("bendiness:", sum([fragment.get("bendiness") for fragment in road.get("fragments")])
-              / len(road.get("fragments")))
-        print("width:", sum([fragment.get("width") for fragment in road.get("fragments")]) / len(road.get("fragments")))
-        print("length:", sum([fragment.get("length") for fragment in road.get("fragments")]))
-        print("intersections:", road.get("intersections"))
-        print("cars per day: ", result.get("average_daily_traffic"))
+                    / len(road.get("fragments")))
+                print("bendiness:", sum([fragment.get("bendiness") for fragment in road.get("fragments")])
+                    / len(road.get("fragments")))
+                print("width:", sum([fragment.get("width") for fragment in road.get("fragments")])
+                      / len(road.get("fragments")))
+                print("length:", sum([fragment.get("length") for fragment in road.get("fragments")]))
+                print("intersections:", road.get("intersections"))
+                print("cars per day: ", result.get("average_daily_traffic"))
+            except OverpassGatewayTimeout:
+                sys.stderr.write("WARNING: Couldn't get results. Server load too high\n")
+                print("Sleeping for 60s")
+                time.sleep(60)
+                continue
+            except OverpassTooManyRequests:
+                sys.stderr.write("WARNING: Couldn't get results. Too many requests\n")
+                print("Sleeping for 60s")
+                time.sleep(60)
+                continue
+            break
 
 
 if __name__ == "__main__":

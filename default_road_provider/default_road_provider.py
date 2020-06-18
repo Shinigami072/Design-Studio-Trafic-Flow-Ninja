@@ -116,7 +116,6 @@ class DefaultRoadProvider(RoadProvider):
 
         result = self.api.query(
             """
-                
                 way(id:{id});
                 node(w);
                 complete {{
@@ -136,7 +135,6 @@ class DefaultRoadProvider(RoadProvider):
 
         result = self.api.query(
             """
-
                 way(id:{id});
                 node(w);
                 complete {{
