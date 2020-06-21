@@ -2,6 +2,7 @@ import math
 
 from model import model
 from road import Road
+import sys
 
 
 class Model(model.Model):
@@ -47,6 +48,35 @@ class Model(model.Model):
     def _road_to_intersection_density(road: Road):
         return road.intersections / (road.length() / 1000)
 
+    @staticmethod
+    def print_warning(speed: float, bendiness: float, density_of_intersections: float):
+        if speed < 40.0:
+            sys.stderr.write(
+                "WARNING: The speed was below the range the model was calibrated for (40.0). "
+                "The result  might be too high due to overfitting on the range edges. Please try "
+                "increasing --length parameter to eliminate this problem. Also make sure there are no traffic light "
+                "on the road as this will invalidate the results.\n")
+        if bendiness < 39.0:
+            sys.stderr.write(
+                "WARNING: The bendiness was below the range the model was calibrated for (39.0). "
+                "The result too low due to overfitting on the range edges. "
+                "Please try increasing --length parameter to eliminate this problem.\n")
+        if bendiness > 682.3:
+            sys.stderr.write(
+                "WARNING: The bendiness was below the range the model was calibrated for (682.3). "
+                "The result might too low due to overfitting on the range edges. "
+                "Please try increasing --length parameter to eliminate this problem.\n")
+        if density_of_intersections < 0.5:
+            sys.stderr.write(
+                "WARNING: The density of intersections was below the range the model was calibrated for (0.5). "
+                "The result might be too high to overfitting on the "
+                "range edges. Please try increasing --length parameter to eliminate this problem.\n")
+        if density_of_intersections > 7.0:
+            sys.stderr.write(
+                "WARNING: The density of intersections was above the range the model was calibrated for (7.0). "
+                "The result might be too low due to overfitting on the "
+                "range edges. Please try increasing --length parameter to eliminate this problem.\n")
+
     def get_average_daily_traffic(self, road: Road, percentile_speed=0.5):
         duration_hours = 24
         speed = Model._road_to_speed(road)
@@ -55,6 +85,8 @@ class Model(model.Model):
 
         density_of_intersections = Model._road_to_intersection_density(road)
         extra_lateral_clearance = Model._road_to_extra_lateral_clearance(road)
+
+        self.print_warning(speed, bendiness, density_of_intersections)
 
         return self._get_average_daily_traffic(
             speed=speed,
