@@ -49,7 +49,7 @@ class Model(model.Model):
         return road.intersections / (road.length() / 1000)
 
     @staticmethod
-    def print_warning(speed: float, bendiness: float, density_of_intersections: float):
+    def print_warning(speed: float, bendiness: float, density_of_intersections: float, length: float):
         if speed < 40.0:
             sys.stderr.write(
                 "WARNING: The speed was below the range the model was calibrated for (40.0). "
@@ -76,6 +76,10 @@ class Model(model.Model):
                 "WARNING: The density of intersections was above the range the model was calibrated for (7.0). "
                 "The result might be too low due to overfitting on the "
                 "range edges. Please try increasing --length parameter to eliminate this problem.\n")
+        if length < 1000:
+            sys.stderr.write(
+                "WARNING: Using road fragments longer then 1000m is recommended. "
+                "The result might be incorrect\n")
 
     def get_average_daily_traffic(self, road: Road, percentile_speed=0.5):
         duration_hours = 24
@@ -86,7 +90,7 @@ class Model(model.Model):
         density_of_intersections = Model._road_to_intersection_density(road)
         extra_lateral_clearance = Model._road_to_extra_lateral_clearance(road)
 
-        self.print_warning(speed, bendiness, density_of_intersections)
+        self.print_warning(speed, bendiness, density_of_intersections, road.length())
 
         return self._get_average_daily_traffic(
             speed=speed,
