@@ -53,29 +53,29 @@ class Model(model.Model):
         if speed < 42.0:
             sys.stderr.write(
                 "WARNING: The speed was below the range the model was calibrated for (40.0). "
-                "The result  might be too high due to overfitting on the range edges. Please try "
+                "The result might be too high due to undefined behavior outside the range. Please try "
                 "increasing --length parameter to eliminate this problem. Also make sure there are no traffic light "
                 "on the road as this will invalidate the results.\n")
         if bendiness < 39.0:
             sys.stderr.write(
                 "WARNING: The bendiness was below the range the model was calibrated for (39.0). "
-                "The result too low due to overfitting on the range edges. "
+                "The result might be too low due undefined behavior outside the range. "
                 "Please try increasing --length parameter to eliminate this problem.\n")
         if bendiness > 682.3:
             sys.stderr.write(
                 "WARNING: The bendiness was below the range the model was calibrated for (682.3). "
-                "The result might too low due to overfitting on the range edges. "
+                "The result might too low due to undefined behavior outside the range. "
                 "Please try increasing --length parameter to eliminate this problem.\n")
         if density_of_intersections < 0.5:
             sys.stderr.write(
                 "WARNING: The density of intersections was below the range the model was calibrated for (0.5). "
-                "The result might be too high to overfitting on the "
-                "range edges. Please try increasing --length parameter to eliminate this problem.\n")
+                "The result might be too high due to undefined behavior outside the range."
+                "Please try increasing --length parameter to eliminate this problem.\n")
         if density_of_intersections > 7.0:
             sys.stderr.write(
                 "WARNING: The density of intersections was above the range the model was calibrated for (7.0). "
-                "The result might be too low due to overfitting on the "
-                "range edges. Please try increasing --length parameter to eliminate this problem.\n")
+                "The result might be too low due to undefined behavior outside the range."
+                "Please try increasing --length parameter to eliminate this problem.\n")
         if length < 1000:
             sys.stderr.write(
                 "WARNING: Using road fragments longer then 1000m is recommended. "
