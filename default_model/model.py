@@ -50,7 +50,7 @@ class Model(model.Model):
 
     @staticmethod
     def print_warning(speed: float, bendiness: float, density_of_intersections: float, length: float):
-        if speed < 40.0:
+        if speed < 42.0:
             sys.stderr.write(
                 "WARNING: The speed was below the range the model was calibrated for (40.0). "
                 "The result  might be too high due to overfitting on the range edges. Please try "
